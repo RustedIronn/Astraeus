@@ -23,7 +23,6 @@ function bvToRGB(bv) {
 }
 
 export default function StarField({ stars, pointsRef, selectedStar }) {
-  // ✅ Precompute attributes
   const { positions, colors, sizes } = useMemo(() => {
     const pos = new Float32Array(stars.length * 3);
     const col = new Float32Array(stars.length * 3);
@@ -34,31 +33,44 @@ export default function StarField({ stars, pointsRef, selectedStar }) {
       pos[i * 3 + 1] = s.y;
       pos[i * 3 + 2] = s.z;
 
-      const brightness = THREE.MathUtils.clamp(2.0 - s.mag * 0.25, 0.3, 2.5);
+      const brightness = THREE.MathUtils.clamp(2.0 - s.mag * 0.25, 0.4, 2.5);
       const c = bvToRGB(s.bv).multiplyScalar(brightness);
 
       col[i * 3] = c.r;
       col[i * 3 + 1] = c.g;
       col[i * 3 + 2] = c.b;
 
-      siz[i] = THREE.MathUtils.clamp(14 - s.mag * 1.5, 2, 12);
+      // ✅ larger min size so faint stars always show
+      siz[i] = THREE.MathUtils.clamp(14 - s.mag * 1.5, 2, 14);
     });
 
     return { positions: pos, colors: col, sizes: siz };
   }, [stars]);
 
-  // ✅ Shaders
+  const materialRef = useRef();
+
+  // ✅ Animate twinkle
+  useFrame((state) => {
+    if (materialRef.current) {
+      materialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
+    }
+  });
+
+  // ✅ Ensure raycasting works
+  useEffect(() => {
+    if (pointsRef.current) {
+      pointsRef.current.raycast = THREE.Points.prototype.raycast;
+    }
+  }, [pointsRef]);
+
   const vertexShader = `
     attribute float size;
     varying vec3 vColor;
     uniform float uTime;
-
     void main() {
       vColor = color;
       vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-
-      float twinkle = 0.8 + 0.4 * sin(uTime * 3.0 + position.x * 0.2 + position.y * 0.3);
-
+      float twinkle = sin(uTime * 3.0 + position.x * 0.1 + position.y * 0.1) * 0.3 + 1.0;
       gl_PointSize = size * twinkle * (300.0 / -mvPosition.z);
       gl_Position = projectionMatrix * mvPosition;
     }
@@ -69,114 +81,43 @@ export default function StarField({ stars, pointsRef, selectedStar }) {
     void main() {
       float d = length(gl_PointCoord - vec2(0.5));
       if (d > 0.5) discard;
-
-      float star = smoothstep(0.5, 0.0, d);
-      float glow = exp(-12.0 * d * d);
-
-      vec3 color = vColor * (star + glow);
-      gl_FragColor = vec4(color, 1.0);
+      float alpha = 1.0 - smoothstep(0.0, 0.5, d);
+      gl_FragColor = vec4(vColor, alpha);
     }
   `;
 
-  const materialRef = useRef();
-  const pulseRef = useRef({ mesh: null });
-  const pausedTime = useRef(0); // stores frozen time when paused
-
-  // ✅ Animate
-  useFrame((state) => {
-    if (materialRef.current) {
-      if (selectedStar) {
-        // freeze animation by keeping last time
-        if (pausedTime.current === 0) {
-          pausedTime.current = state.clock.elapsedTime;
-        }
-        materialRef.current.uniforms.uTime.value = pausedTime.current;
-      } else {
-        // resume normal animation
-        pausedTime.current = 0;
-        materialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
-      }
-    }
-
-    if (pulseRef.current.mesh) {
-      const pulse = 1.2 + Math.sin(state.clock.elapsedTime * 2.0) * 0.2;
-      pulseRef.current.mesh.scale.set(pulse, pulse, pulse);
-    }
-  });
-
-  // ✅ Restore clicking
-  useEffect(() => {
-    if (pointsRef.current) {
-      pointsRef.current.raycast = THREE.Points.prototype.raycast;
-    }
-  }, [pointsRef]);
-
   return (
-    <>
-      {/* ⭐ Stars (with pause/resume animation) */}
-      <points ref={pointsRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            array={positions}
-            count={positions.length / 3}
-            itemSize={3}
-          />
-          <bufferAttribute
-            attach="attributes-color"
-            array={colors}
-            count={colors.length / 3}
-            itemSize={3}
-          />
-          <bufferAttribute
-            attach="attributes-size"
-            array={sizes}
-            count={sizes.length}
-            itemSize={1}
-          />
-        </bufferGeometry>
-        <shaderMaterial
-          ref={materialRef}
-          vertexShader={vertexShader}
-          fragmentShader={fragmentShader}
-          vertexColors
-          transparent
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-          uniforms={{ uTime: { value: 0 } }}
+    <points ref={pointsRef}>
+      <bufferGeometry>
+        <bufferAttribute
+          attach="attributes-position"
+          array={positions}
+          count={positions.length / 3}
+          itemSize={3}
         />
-      </points>
-
-      {/* 🔥 Highlight for selected star */}
-      {selectedStar && (
-        <group position={[selectedStar.x, selectedStar.y, selectedStar.z]}>
-          <mesh>
-            <sphereGeometry args={[3, 32, 32]} />
-            <meshBasicMaterial color="yellow" />
-          </mesh>
-
-          <mesh ref={(el) => (pulseRef.current.mesh = el)}>
-            <sphereGeometry args={[6, 32, 32]} />
-            <meshBasicMaterial
-              color="yellow"
-              transparent
-              opacity={0.35}
-              blending={THREE.AdditiveBlending}
-              depthWrite={false}
-            />
-          </mesh>
-
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[7, 8, 64]} />
-            <meshBasicMaterial
-              color="yellow"
-              side={THREE.DoubleSide}
-              transparent
-              opacity={0.6}
-            />
-          </mesh>
-        </group>
-      )}
-    </>
+        <bufferAttribute
+          attach="attributes-color"
+          array={colors}
+          count={colors.length / 3}
+          itemSize={3}
+        />
+        <bufferAttribute
+          attach="attributes-size"
+          array={sizes}
+          count={sizes.length}
+          itemSize={1}
+        />
+      </bufferGeometry>
+      <shaderMaterial
+        ref={materialRef}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
+        vertexColors
+        transparent
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+        uniforms={{ uTime: { value: 0 } }}
+      />
+    </points>
   );
 }

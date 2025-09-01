@@ -65,6 +65,7 @@ function App() {
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [showNasa, setShowNasa] = useState(!isMobile);
   const [showStarsList, setShowStarsList] = useState(false);
+  const [showLegend, setShowLegend] = useState(!isMobile);
   const pointsRef = useRef();
 
   const funFacts = {
@@ -181,6 +182,7 @@ function App() {
           padding: "6px 12px",
           borderRadius: "8px",
           fontSize: "0.8rem",
+          zIndex: 9999,
         }}
       >
         {isMobile ? "📱 Drag = rotate | Pinch = zoom/pan" : "🖱️ Scroll to zoom, drag to rotate"}
@@ -235,6 +237,7 @@ function App() {
             borderRadius: "12px",
             color: "white",
             maxWidth: "360px",
+            zIndex: 9999,
           }}
         >
           <h2 style={{ margin: "0 0 10px 0" }}>{selectedStar.name}</h2>
@@ -264,7 +267,7 @@ function App() {
       )}
 
       {/* 📸 NASA APOD */}
-      <div style={{ position: "absolute", right: "20px", top: "20px" }}>
+      <div style={{ position: "absolute", right: "20px", top: "20px", zIndex: 9999 }}>
         {isMobile ? (
           <>
             <button
@@ -296,6 +299,7 @@ function App() {
             left: "50%",
             transform: "translateX(-50%)",
             textAlign: "center",
+            zIndex: 9999,
           }}
         >
           <button
@@ -339,7 +343,30 @@ function App() {
         />
       )}
 
-      <SpectralLegend />
+      {/* 🎨 Spectral Legend */}
+      <div style={{ position: "absolute", left: "20px", bottom: "20px", zIndex: 9999 }}>
+        {isMobile ? (
+          <>
+            <button
+              onClick={() => setShowLegend(!showLegend)}
+              style={{
+                background: "#14b8a6",
+                color: "white",
+                padding: "6px 10px",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "0.85rem",
+              }}
+            >
+              {showLegend ? "Hide Spectral Legend" : "🎨 Spectral Legend"}
+            </button>
+            {showLegend && <SpectralLegend />}
+          </>
+        ) : (
+          <SpectralLegend />
+        )}
+      </div>
+
       <Disclaimer />
     </div>
   );
