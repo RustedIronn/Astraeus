@@ -63,7 +63,8 @@ function App() {
   const [stars, setStars] = useState([]);
   const [selectedStar, setSelectedStar] = useState(null);
   const [showDisclaimer, setShowDisclaimer] = useState(true);
-  const [showNasa, setShowNasa] = useState(!isMobile); // 📱 collapsed by default
+  const [showNasa, setShowNasa] = useState(!isMobile);
+  const [showStarsList, setShowStarsList] = useState(false);
   const pointsRef = useRef();
 
   const funFacts = {
@@ -182,7 +183,7 @@ function App() {
           fontSize: "0.8rem",
         }}
       >
-        {isMobile ? "📱 One finger = rotate, two fingers = zoom/pan" : "🖱️ Scroll to zoom, drag to rotate"}
+        {isMobile ? "📱 Drag = rotate | Pinch = zoom/pan" : "🖱️ Scroll to zoom, drag to rotate"}
       </div>
     );
 
@@ -205,11 +206,14 @@ function App() {
         <ClickHandler />
         <FlyToStar target={selectedStar} />
         <OrbitControls
+          makeDefault
           enableZoom={true}
           enablePan={true}
           enableRotate={true}
-          zoomSpeed={0.5}
-          panSpeed={0.5}
+          zoomSpeed={0.8}
+          panSpeed={0.8}
+          enableDamping={true}
+          dampingFactor={0.05}
           touches={{
             ONE: THREE.TOUCH.ROTATE,
             TWO: THREE.TOUCH.DOLLY_PAN,
@@ -218,9 +222,7 @@ function App() {
         />
       </Canvas>
 
-      <BrightestStars stars={stars} onSelect={(star) => setSelectedStar(star)} />
-
-      {/* ⭐ Star detail modal (unchanged) */}
+      {/* ⭐ Star detail modal */}
       {selectedStar && (
         <div
           style={{
@@ -261,7 +263,7 @@ function App() {
         </div>
       )}
 
-      {/* 📱 Responsive NASA APOD */}
+      {/* 📸 NASA APOD */}
       <div style={{ position: "absolute", right: "20px", top: "20px" }}>
         {isMobile ? (
           <>
@@ -284,6 +286,58 @@ function App() {
           <StarOfTheDay />
         )}
       </div>
+
+      {/* 🌟 Brightest Stars */}
+      {isMobile ? (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            textAlign: "center",
+          }}
+        >
+          <button
+            onClick={() => setShowStarsList((prev) => !prev)}
+            style={{
+              background: "#9333ea",
+              color: "white",
+              border: "none",
+              padding: "8px 14px",
+              borderRadius: "8px",
+              fontWeight: "600",
+            }}
+          >
+            {showStarsList ? "Hide Brightest Stars" : "🌟 Brightest Stars"}
+          </button>
+
+          {showStarsList && (
+            <div
+              style={{
+                marginTop: "10px",
+                background: "rgba(20,20,30,0.95)",
+                color: "white",
+                padding: "12px",
+                borderRadius: "10px",
+                maxHeight: "40vh",
+                overflowY: "auto",
+                width: "85vw",
+              }}
+            >
+              <BrightestStars
+                stars={stars}
+                onSelect={(star) => setSelectedStar(star)}
+              />
+            </div>
+          )}
+        </div>
+      ) : (
+        <BrightestStars
+          stars={stars}
+          onSelect={(star) => setSelectedStar(star)}
+        />
+      )}
 
       <SpectralLegend />
       <Disclaimer />
