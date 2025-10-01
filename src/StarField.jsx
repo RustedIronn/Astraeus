@@ -1,6 +1,6 @@
 import { useMemo, useRef, useEffect } from "react";
 import * as THREE from "three";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame, useThree, useLoader } from "@react-three/fiber";
 
 // 🎨 Extended palette for spectral classes
 function spectralToColor(spectral) {
@@ -25,6 +25,31 @@ export default function StarField({ stars, pointsRef, selectedStar, onStarClick 
   const { camera, gl } = useThree();
   const raycasterRef = useRef(new THREE.Raycaster());
 
+  // Load star textures for each spectral type
+  const texturePaths = {
+    O: "/textures/star_textures/star_O.jpg",
+    B: "/textures/star_textures/star_B.jpg",
+    A: "/textures/star_textures/star_A.jpg",
+    F: "/textures/star_textures/star_F.jpg",
+    G: "/textures/star_textures/star_G.jpg",
+    K: "/textures/star_textures/star_K.jpg",
+    M: "/textures/star_textures/star_M.jpg",
+    L: "/textures/star_textures/star_L.jpg",
+    T: "/textures/star_textures/star_T.jpg",
+    Y: "/textures/star_textures/star_Y.jpg",
+  };
+
+  const loadedTextures = {};
+  Object.entries(texturePaths).forEach(([spec, path]) => {
+    loadedTextures[spec] = useLoader(THREE.TextureLoader, path);
+  });
+
+  function getStarTexture(spectral) {
+    const type = spectral?.trim().charAt(0).toUpperCase();
+    return loadedTextures[type] || loadedTextures.G;
+  }
+
+  // Geometry + color for point cloud stars
   const { positions, colors, sizes } = useMemo(() => {
     const pos = new Float32Array(stars.length * 3);
     const col = new Float32Array(stars.length * 3);
@@ -114,6 +139,7 @@ export default function StarField({ stars, pointsRef, selectedStar, onStarClick 
 
   return (
     <>
+      {/* Background stars as GPU point cloud */}
       <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -147,26 +173,41 @@ export default function StarField({ stars, pointsRef, selectedStar, onStarClick 
         />
       </points>
 
+      {/* Scene lights for showing texture detail */}
+      <ambientLight intensity={0.6} />
+      <pointLight position={[0, 0, 0]} intensity={1.2} />
+
+      {/* Selected star with texture + emissive glow */}
       {selectedStar && (
         <group position={[selectedStar.x, selectedStar.y, selectedStar.z]}>
           <mesh>
-            <sphereGeometry args={[3, 32, 32]} />
-            <meshBasicMaterial color="yellow" />
+            <sphereGeometry args={[3, 64, 64]} />
+            <meshPhysicalMaterial
+              map={getStarTexture(selectedStar.spect)}
+              emissive={spectralToColor(selectedStar.spect)}
+              emissiveIntensity={0.3}   // lower so texture is visible
+              roughness={0.8}
+              metalness={0.0}
+            />
           </mesh>
+
+          {/* Pulsing aura */}
           <mesh ref={(el) => (pulseRef.current.mesh = el)}>
             <sphereGeometry args={[6, 32, 32]} />
             <meshBasicMaterial
-              color="yellow"
+              color={spectralToColor(selectedStar.spect)}
               transparent
               opacity={0.35}
               blending={THREE.AdditiveBlending}
               depthWrite={false}
             />
           </mesh>
+
+          {/* Outer ring aura */}
           <mesh rotation={[Math.PI / 2, 0, 0]}>
             <ringGeometry args={[7, 8, 64]} />
             <meshBasicMaterial
-              color="yellow"
+              color={spectralToColor(selectedStar.spect)}
               side={THREE.DoubleSide}
               transparent
               opacity={0.6}

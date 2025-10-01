@@ -7,7 +7,7 @@ import * as THREE from "three";
 import StarField from "./StarField";
 import ConstellationViewer from "./ConstellationViewer";
 import SpectralLegend from "./SpectralLegend";
-import BrightestStars from "./StarGuide";
+import StarGuide from "./StarGuide";
 
 function FlyToStar({ target }) {
   const { camera, controls } = useThree();
@@ -187,7 +187,7 @@ function App() {
         />
       </Canvas>
 
-      <BrightestStars stars={stars} onSelect={(star) => setSelectedStar(star)} />
+      <StarGuide stars={stars} onSelect={(star) => setSelectedStar(star)} />
 
       {/* ⭐ Star detail modal */}
       {selectedStar && (
