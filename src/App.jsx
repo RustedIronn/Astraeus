@@ -7,10 +7,7 @@ import * as THREE from "three";
 import StarField from "./StarField";
 import ConstellationViewer from "./ConstellationViewer";
 import SpectralLegend from "./SpectralLegend";
-import BrightestStars from "./BrightestStars";
-
-// 📱 detect mobile
-const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+import BrightestStars from "./StarGuide";
 
 function FlyToStar({ target }) {
   const { camera, controls } = useThree();
@@ -63,9 +60,6 @@ function App() {
   const [stars, setStars] = useState([]);
   const [selectedStar, setSelectedStar] = useState(null);
   const [showDisclaimer, setShowDisclaimer] = useState(true);
-  const [showNasa, setShowNasa] = useState(!isMobile);
-  const [showStarsList, setShowStarsList] = useState(false);
-  const [showLegend, setShowLegend] = useState(!isMobile);
   const pointsRef = useRef();
 
   const funFacts = {
@@ -90,7 +84,13 @@ function App() {
             : String(val).trim();
 
         const data = results.data
-          .filter((s) => s.mag !== undefined && s.x != null && s.y != null && s.z != null)
+          .filter(
+            (s) =>
+              s.mag !== undefined &&
+              s.x != null &&
+              s.y != null &&
+              s.z != null
+          )
           .filter((s) => parseFloat(s.mag) <= 7)
           .map((s) => ({
             name:
@@ -136,39 +136,6 @@ function App() {
     });
   }, []);
 
-  const ClickHandler = () => {
-    const { camera, gl } = useThree();
-
-    useEffect(() => {
-      const raycaster = new THREE.Raycaster();
-      const mouse = new THREE.Vector2();
-
-      function handleClick(event) {
-        const rect = gl.domElement.getBoundingClientRect();
-        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-        raycaster.params.Points.threshold = 3;
-        raycaster.setFromCamera(mouse, camera);
-
-        if (!pointsRef.current) return;
-        const intersects = raycaster.intersectObject(pointsRef.current);
-
-        if (intersects.length > 0) {
-          const nearest = intersects.reduce((a, b) =>
-            a.distance < b.distance ? a : b
-          );
-          setSelectedStar(stars[nearest.index]);
-        }
-      }
-
-      gl.domElement.addEventListener("click", handleClick);
-      return () => gl.domElement.removeEventListener("click", handleClick);
-    }, [stars, camera, gl]);
-
-    return null;
-  };
-
   const Disclaimer = () =>
     showDisclaimer && (
       <div
@@ -182,10 +149,9 @@ function App() {
           padding: "6px 12px",
           borderRadius: "8px",
           fontSize: "0.8rem",
-          zIndex: 9999,
         }}
       >
-        {isMobile ? "📱 Drag = rotate | Pinch = zoom/pan" : "🖱️ Scroll to zoom, drag to rotate"}
+        🖱️ Scroll to zoom, drag to rotate
       </div>
     );
 
@@ -203,19 +169,16 @@ function App() {
           stars={stars}
           pointsRef={pointsRef}
           selectedStar={selectedStar}
+          onStarClick={setSelectedStar}
         />
         <ConstellationViewer stars={stars} selectedStar={selectedStar} />
-        <ClickHandler />
         <FlyToStar target={selectedStar} />
         <OrbitControls
-          makeDefault
           enableZoom={true}
           enablePan={true}
           enableRotate={true}
-          zoomSpeed={0.8}
-          panSpeed={0.8}
-          enableDamping={true}
-          dampingFactor={0.05}
+          zoomSpeed={0.5}
+          panSpeed={0.5}
           touches={{
             ONE: THREE.TOUCH.ROTATE,
             TWO: THREE.TOUCH.DOLLY_PAN,
@@ -223,6 +186,8 @@ function App() {
           onChange={() => setShowDisclaimer(false)}
         />
       </Canvas>
+
+      <BrightestStars stars={stars} onSelect={(star) => setSelectedStar(star)} />
 
       {/* ⭐ Star detail modal */}
       {selectedStar && (
@@ -237,7 +202,6 @@ function App() {
             borderRadius: "12px",
             color: "white",
             maxWidth: "360px",
-            zIndex: 9999,
           }}
         >
           <h2 style={{ margin: "0 0 10px 0" }}>{selectedStar.name}</h2>
@@ -266,107 +230,12 @@ function App() {
         </div>
       )}
 
-      {/* 📸 NASA APOD */}
-      <div style={{ position: "absolute", right: "20px", top: "20px", zIndex: 9999 }}>
-        {isMobile ? (
-          <>
-            <button
-              onClick={() => setShowNasa(!showNasa)}
-              style={{
-                background: "#2563eb",
-                color: "white",
-                padding: "6px 10px",
-                border: "none",
-                borderRadius: "8px",
-                fontSize: "0.85rem",
-              }}
-            >
-              {showNasa ? "Hide NASA APOD" : "Show NASA APOD"}
-            </button>
-            {showNasa && <StarOfTheDay />}
-          </>
-        ) : (
-          <StarOfTheDay />
-        )}
+      {/* 🌌 NASA APOD always visible */}
+      <div style={{ position: "absolute", right: "20px", top: "20px" }}>
+        <StarOfTheDay />
       </div>
 
-      {/* 🌟 Brightest Stars */}
-      {isMobile ? (
-        <div
-          style={{
-            position: "absolute",
-            bottom: "20px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            textAlign: "center",
-            zIndex: 9999,
-          }}
-        >
-          <button
-            onClick={() => setShowStarsList((prev) => !prev)}
-            style={{
-              background: "#9333ea",
-              color: "white",
-              border: "none",
-              padding: "8px 14px",
-              borderRadius: "8px",
-              fontWeight: "600",
-            }}
-          >
-            {showStarsList ? "Hide Brightest Stars" : "🌟 Brightest Stars"}
-          </button>
-
-          {showStarsList && (
-            <div
-              style={{
-                marginTop: "10px",
-                background: "rgba(20,20,30,0.95)",
-                color: "white",
-                padding: "12px",
-                borderRadius: "10px",
-                maxHeight: "40vh",
-                overflowY: "auto",
-                width: "85vw",
-              }}
-            >
-              <BrightestStars
-                stars={stars}
-                onSelect={(star) => setSelectedStar(star)}
-              />
-            </div>
-          )}
-        </div>
-      ) : (
-        <BrightestStars
-          stars={stars}
-          onSelect={(star) => setSelectedStar(star)}
-        />
-      )}
-
-      {/* 🎨 Spectral Legend */}
-      <div style={{ position: "absolute", left: "20px", bottom: "20px", zIndex: 9999 }}>
-        {isMobile ? (
-          <>
-            <button
-              onClick={() => setShowLegend(!showLegend)}
-              style={{
-                background: "#14b8a6",
-                color: "white",
-                padding: "6px 10px",
-                border: "none",
-                borderRadius: "8px",
-                fontSize: "0.85rem",
-              }}
-            >
-              {showLegend ? "Hide Spectral Legend" : "🎨 Spectral Legend"}
-            </button>
-            {showLegend && <SpectralLegend />}
-          </>
-        ) : (
-          <SpectralLegend />
-        )}
-      </div>
-
+      <SpectralLegend />
       <Disclaimer />
     </div>
   );
