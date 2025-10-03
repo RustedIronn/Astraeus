@@ -60,6 +60,7 @@ function App() {
   const [stars, setStars] = useState([]);
   const [selectedStar, setSelectedStar] = useState(null);
   const [showDisclaimer, setShowDisclaimer] = useState(true);
+  const [loading, setLoading] = useState(true);
   const pointsRef = useRef();
 
   const funFacts = {
@@ -71,69 +72,90 @@ function App() {
     70890: "Proxima Centauri is the closest star to the Sun.",
   };
 
+  const clean = (val) =>
+    val === undefined || val === null || val === "" ? null : String(val).trim();
+
+  // ⭐ Mapper function (works for both AWS + CSV)
+  const mapStars = (data) =>
+    data
+      .filter(
+        (s) =>
+          (s.mag ?? s.Mag) !== undefined &&
+          (s.x ?? s.X) != null &&
+          (s.y ?? s.Y) != null &&
+          (s.z ?? s.Z) != null
+      )
+      .filter((s) => parseFloat(s.mag ?? s.Mag) <= 7)
+      .map((s) => ({
+        name:
+          clean(s.proper ?? s.Proper) ||
+          (clean(s.flam ?? s.Flam) && clean(s.bayer ?? s.Bayer)
+            ? `${s.flam ?? s.Flam} ${s.bayer ?? s.Bayer}`
+            : null) ||
+          clean(s.bayer ?? s.Bayer) ||
+          (clean(s.hd ?? s.HD)
+            ? `HD ${s.hd ?? s.HD}`
+            : clean(s.hip ?? s.HIP)
+            ? `HIP ${s.hip ?? s.HIP}`
+            : "Unnamed Star"),
+
+        x: parseFloat(s.x ?? s.X) * 5,
+        y: parseFloat(s.y ?? s.Y) * 5,
+        z: parseFloat(s.z ?? s.Z) * 5,
+        mag: parseFloat(s.mag ?? s.Mag),
+        bv: parseFloat(s.ci ?? s.CI) || 0.0,
+        dist: parseFloat(s.dist ?? s.Dist),
+
+        hip: clean(s.hip ?? s.HIP),
+        hd: clean(s.hd ?? s.HD),
+        hr: clean(s.hr ?? s.HR),
+        gl: clean(s.gl ?? s.GL),
+        bf: clean(s.bf ?? s.BF),
+
+        bayer: clean(s.bayer ?? s.Bayer) || "—",
+        flam: clean(s.flam ?? s.Flam) || "—",
+        con: clean(s.con ?? s.Con) || "—",
+        spect: clean(s.spect ?? s.Spect) || "—",
+        lum: clean(s.lum ?? s.Lum) || "—",
+
+        var: clean(s.var ?? s.Var),
+        var_min: clean(s.var_min ?? s.VarMin),
+        var_max: clean(s.var_max ?? s.VarMax),
+
+        funfact: funFacts[s.hip ?? s.HIP] || null,
+      }));
+
   useEffect(() => {
-    Papa.parse("/hyg_v42.csv", {
-      download: true,
-      header: true,
-      dynamicTyping: false,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const clean = (val) =>
-          val === undefined || val === null || val === ""
-            ? null
-            : String(val).trim();
+    // Try AWS first
+    fetch("https://z53iyy74wb.execute-api.eu-north-1.amazonaws.com/stars")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("AWS API sample:", data[0]);
+        const mapped = mapStars(data);
+        if (mapped.length > 0) {
+          console.log("Loaded stars from AWS:", mapped.length);
+          setStars(mapped);
+          setLoading(false);
+        } else {
+          throw new Error("AWS returned no stars");
+        }
+      })
+      .catch((err) => {
+        console.warn("AWS failed, using CSV fallback:", err);
 
-        const data = results.data
-          .filter(
-            (s) =>
-              s.mag !== undefined &&
-              s.x != null &&
-              s.y != null &&
-              s.z != null
-          )
-          .filter((s) => parseFloat(s.mag) <= 7)
-          .map((s) => ({
-            name:
-              clean(s.proper) ||
-              (clean(s.flam) && clean(s.bayer)
-                ? `${s.flam} ${s.bayer}`
-                : null) ||
-              clean(s.bayer) ||
-              (clean(s.hd)
-                ? `HD ${s.hd}`
-                : clean(s.hip)
-                ? `HIP ${s.hip}`
-                : "Unnamed Star"),
-
-            x: parseFloat(s.x) * 5,
-            y: parseFloat(s.y) * 5,
-            z: parseFloat(s.z) * 5,
-            mag: parseFloat(s.mag),
-            bv: s.ci ?? 0.0,
-            dist: parseFloat(s.dist),
-
-            hip: clean(s.hip),
-            hd: clean(s.hd),
-            hr: clean(s.hr),
-            gl: clean(s.gl),
-            bf: clean(s.bf),
-
-            bayer: clean(s.bayer) || "—",
-            flam: clean(s.flam) || "—",
-            con: clean(s.con) || "—",
-            spect: clean(s.spect) || "—",
-            lum: clean(s.lum) || "—",
-
-            var: clean(s.var),
-            var_min: clean(s.var_min),
-            var_max: clean(s.var_max),
-
-            funfact: funFacts[s.hip] || null,
-          }));
-
-        setStars(data);
-      },
-    });
+        Papa.parse("/hyg_v42.csv", {
+          download: true,
+          header: true,
+          dynamicTyping: false,
+          skipEmptyLines: true,
+          complete: (results) => {
+            const mapped = mapStars(results.data);
+            console.log("Loaded stars from CSV:", mapped.length);
+            setStars(mapped);
+            setLoading(false);
+          },
+        });
+      });
   }, []);
 
   const Disclaimer = () =>
@@ -164,6 +186,26 @@ function App() {
         position: "relative",
       }}
     >
+      {/* 🚀 Loading overlay */}
+      {loading && (
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            color: "white",
+            background: "rgba(0,0,0,0.8)",
+            padding: "12px 20px",
+            borderRadius: "8px",
+            fontSize: "1rem",
+            zIndex: 10,
+          }}
+        >
+          🚀 Loading stars from AWS API...
+        </div>
+      )}
+
       <Canvas camera={{ position: [0, 0, 2000] }}>
         <StarField
           stars={stars}
