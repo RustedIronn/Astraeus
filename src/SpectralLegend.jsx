@@ -16,18 +16,18 @@ function SpectralLegend() {
     <div
       style={{
         position: "absolute",
-        bottom: "15px",
+        bottom: "10px",
         right: "32px", // 👉 stays on the right
-        background: "rgba(20,20,30,0.35)",
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
+        background: "rgba(20,20,30,0.07)",
+        backdropFilter: "blur(12px) saturate(140%)",
+        WebkitBackdropFilter: "blur(12px) saturate(140%)",
         padding: "10px 14px",
         borderRadius: "10px",
-        color: "white",
+        color: "#e5e7eb",
         fontSize: "0.8rem",
         fontFamily: "Segoe UI, Roboto, sans-serif",
         border: "1px solid rgba(255, 255, 255, 0.09)",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.35)",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
         zIndex: 9999,
         whiteSpace: "nowrap",
       }}

@@ -8,6 +8,7 @@ import StarField from "./StarField";
 import ConstellationViewer from "./ConstellationViewer";
 import SpectralLegend from "./SpectralLegend";
 import StarGuide from "./StarGuide";
+import BlockChain from "./BlockChain"; // ✅ Import your blockchain button
 
 function FlyToStar({ target }) {
   const { camera, controls } = useThree();
@@ -15,19 +16,12 @@ function FlyToStar({ target }) {
 
   useEffect(() => {
     if (target) {
-      const start = {
-        pos: camera.position.clone(),
-        time: performance.now(),
-      };
-
+      const start = { pos: camera.position.clone(), time: performance.now() };
       const scale = THREE.MathUtils.clamp(10 - target.mag, 2, 20);
       const safeDist = scale * 20;
-
       const starPos = new THREE.Vector3(target.x, target.y, target.z);
       const endPos = starPos.clone().add(new THREE.Vector3(0, 0, safeDist));
-
       anim.current = { start, endPos, starPos, duration: 2000 };
-
       if (controls) controls.enabled = false;
     }
   }, [target, camera, controls]);
@@ -37,9 +31,7 @@ function FlyToStar({ target }) {
       const { start, endPos, starPos, duration } = anim.current;
       const elapsed = performance.now() - start.time;
       const t = Math.min(elapsed / duration, 1);
-
       const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
       camera.position.lerpVectors(start.pos, endPos, ease);
       camera.lookAt(starPos);
 
@@ -75,7 +67,6 @@ function App() {
   const clean = (val) =>
     val === undefined || val === null || val === "" ? null : String(val).trim();
 
-  // ⭐ Mapper function (works for both AWS + CSV)
   const mapStars = (data) =>
     data
       .filter(
@@ -98,35 +89,29 @@ function App() {
             : clean(s.hip ?? s.HIP)
             ? `HIP ${s.hip ?? s.HIP}`
             : "Unnamed Star"),
-
         x: parseFloat(s.x ?? s.X) * 5,
         y: parseFloat(s.y ?? s.Y) * 5,
         z: parseFloat(s.z ?? s.Z) * 5,
         mag: parseFloat(s.mag ?? s.Mag),
         bv: parseFloat(s.ci ?? s.CI) || 0.0,
         dist: parseFloat(s.dist ?? s.Dist),
-
         hip: clean(s.hip ?? s.HIP),
         hd: clean(s.hd ?? s.HD),
         hr: clean(s.hr ?? s.HR),
         gl: clean(s.gl ?? s.GL),
         bf: clean(s.bf ?? s.BF),
-
         bayer: clean(s.bayer ?? s.Bayer) || "—",
         flam: clean(s.flam ?? s.Flam) || "—",
         con: clean(s.con ?? s.Con) || "—",
         spect: clean(s.spect ?? s.Spect) || "—",
         lum: clean(s.lum ?? s.Lum) || "—",
-
         var: clean(s.var ?? s.Var),
         var_min: clean(s.var_min ?? s.VarMin),
         var_max: clean(s.var_max ?? s.VarMax),
-
         funfact: funFacts[s.hip ?? s.HIP] || null,
       }));
 
   useEffect(() => {
-    // Try AWS first
     fetch("https://z53iyy74wb.execute-api.eu-north-1.amazonaws.com/stars")
       .then((res) => res.json())
       .then((data) => {
@@ -142,7 +127,6 @@ function App() {
       })
       .catch((err) => {
         console.warn("AWS failed, using CSV fallback:", err);
-
         Papa.parse("/hyg_v42.csv", {
           download: true,
           header: true,
@@ -186,7 +170,6 @@ function App() {
         position: "relative",
       }}
     >
-      {/* 🚀 Loading overlay */}
       {loading && (
         <div
           style={{
@@ -231,7 +214,6 @@ function App() {
 
       <StarGuide stars={stars} onSelect={(star) => setSelectedStar(star)} />
 
-      {/* ⭐ Star detail modal */}
       {selectedStar && (
         <div
           style={{
@@ -272,13 +254,36 @@ function App() {
         </div>
       )}
 
-      {/* 🌌 NASA APOD always visible */}
       <div style={{ position: "absolute", right: "20px", top: "20px" }}>
         <StarOfTheDay />
       </div>
 
       <SpectralLegend />
       <Disclaimer />
+
+      {/* 💸 AstraeusCoin Interaction Button */}
+      <div
+        style={{
+        position: "absolute",
+        left: "10px",
+        bottom: "5px",
+        background: "rgba(255, 255, 255, 0.07)", // glass base
+        border: "1px solid rgba(255, 255, 255, 0.05)", // subtle border
+        borderRadius: "16px",
+        padding: "16px",
+        width: "185px",
+        maxHeight: "200px",
+        color: "#e5e7eb",
+        fontSize: "0.9rem",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+        backdropFilter: "blur(12px) saturate(140%)", // ✨ real glassmorph
+        WebkitBackdropFilter: "blur(12px) saturate(140%)",
+      }}
+      >
+      <BlockChain />
+      </div>
     </div>
   );
 }

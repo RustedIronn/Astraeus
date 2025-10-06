@@ -12,7 +12,7 @@ function StarOfTheDay() {
       .catch(console.error);
   }, []);
 
-  if (!data) return <p style={{ color: "white" }}>Loading Star of the Day...</p>;
+  if (!data) return <p style={{ color: "white" }}>Loading Space fact of the Day...</p>;
 
   const text = showMore
     ? data.explanation
@@ -25,21 +25,21 @@ function StarOfTheDay() {
         top: "5px",
         right: "0px",
         width: "340px",
-        background: "rgba(20,20,30,0.35)", // 👈 transparent background
-        backdropFilter: "blur(10px)",       // 👈 glass effect
-        WebkitBackdropFilter: "blur(10px)", // Safari support
+        background: "rgba(20,20,30,0.07)", // 👈 transparent background
+        backdropFilter: "blur(12px) saturate(140%)",       // 👈 glass effect
+        WebkitBackdropFilter: "blur(12px) saturate(140%)", // Safari support
         padding: "16px",
         borderRadius: "12px",
-        color: "white",
+        color: "#e5e7eb",
         fontFamily: "Segoe UI, Roboto, sans-serif",
         maxHeight: "480px",
         overflowY: "auto",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
         border: "1px solid rgba(255, 255, 255, 0.03)",
       }}
     >
       <h3 style={{ margin: "0 0 6px 0", fontSize: "18px", color: "#a78bfa" }}>
-        ⭐ Star of the Day
+        ⭐ The Space Brief
       </h3>
       <p style={{ margin: "0 0 10px 0", fontWeight: "bold", fontSize: "15px" }}>
         {data.title}
