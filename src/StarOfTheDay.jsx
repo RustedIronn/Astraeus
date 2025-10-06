@@ -12,7 +12,7 @@ function StarOfTheDay() {
       .catch(console.error);
   }, []);
 
-  if (!data) return <p style={{ color: "white" }}>Loading Space fact of the Day...</p>;
+  if (!data) return <p style={{ color: "white" }}>Loading The Space Brief...</p>;
 
   const text = showMore
     ? data.explanation

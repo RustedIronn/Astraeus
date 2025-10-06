@@ -10,6 +10,49 @@ import SpectralLegend from "./SpectralLegend";
 import StarGuide from "./StarGuide";
 import BlockChain from "./BlockChain"; // ✅ Blockchain button
 
+function generateFact(star) {
+  const spectralType = (star.spect?.trim()?.charAt(0)?.toUpperCase() || "G");
+  const dist = !isNaN(parseFloat(star.dist)) ? parseFloat(star.dist) : Math.floor(Math.random() * 500 + 10);
+  const mag = !isNaN(parseFloat(star.mag)) ? parseFloat(star.mag) : Math.random() * 6;
+  const con = star.con?.trim() || "an unknown constellation";
+
+  const types = {
+    O: "a blazing blue star reaching over 30,000 K",
+    B: "a bright blue-white giant",
+    A: "a brilliant white star",
+    F: "a warm yellow-white star",
+    G: "a yellow main-sequence star like our Sun",
+    K: "an orange star cooler than the Sun",
+    M: "a cool red dwarf",
+  };
+  const typeDesc = types[spectralType] || types.G;
+
+  const distance =
+    dist < 10
+      ? `${dist.toFixed(1)} ly from Earth`
+      : dist < 100
+      ? `about ${dist.toFixed(1)} ly away`
+      : `${Math.round(dist)} ly from our system`;
+
+  const brightness =
+    mag < 1
+      ? "one of the brightest visible stars"
+      : mag < 3
+      ? "visible to the naked eye"
+      : "too faint without a telescope";
+
+  const endings = [
+    "Its light has traveled for centuries.",
+    "A key part of its constellation.",
+    "Cataloged in the Hipparcos star index.",
+    "Studied for its unique color spectrum.",
+  ];
+  const ending = endings[Math.floor(Math.random() * endings.length)];
+
+  return `This is ${typeDesc}, ${brightness}, located ${distance} in ${con}. ${ending}`;
+}
+
+
 function FlyToStar({ target }) {
   const { camera, controls } = useThree();
   const anim = useRef(null);
@@ -108,7 +151,16 @@ function App() {
         var: clean(s.var ?? s.Var),
         var_min: clean(s.var_min ?? s.VarMin),
         var_max: clean(s.var_max ?? s.VarMax),
-        funfact: funFacts[s.hip ?? s.HIP] || null,
+
+        // ✅ Only this line changed
+        funfact:
+          funFacts[s.hip ?? s.HIP] ||
+          generateFact({
+            spect: s.spect ?? s.Spect ?? "G",
+            dist: s.dist ?? s.Dist ?? Math.random() * 500 + 10,
+            mag: s.mag ?? s.Mag ?? Math.random() * 6,
+            con: s.con ?? s.Con ?? "an unknown constellation",
+          }),
       }));
 
   useEffect(() => {
@@ -218,10 +270,10 @@ function App() {
         <div
           style={{
             position: "absolute",
-            bottom: "20px",
-            left: "50%",
+            bottom: "10px",
+            left: "51%",
             transform: "translateX(-50%)",
-            background: "rgba(20, 20, 30, 0.95)",
+            background: "rgba(20, 20, 30, 0.2)",
             padding: "16px 20px",
             borderRadius: "12px",
             color: "white",
