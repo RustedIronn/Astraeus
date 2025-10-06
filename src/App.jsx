@@ -99,6 +99,7 @@ function App() {
   const pointsRef = useRef();
 
   const funFacts = {
+    0: "Sol — our Sun — is the only star known to support life, producing 3.8×10²⁶ watts of energy every second.",
     32349: "Sirius is the brightest star in the night sky.",
     27989: "Betelgeuse is a red supergiant that will go supernova one day.",
     91262: "Vega was once the North Star and is part of the Summer Triangle.",
@@ -154,13 +155,14 @@ function App() {
 
         // ✅ Only this line changed
         funfact:
-          funFacts[s.hip ?? s.HIP] ||
-          generateFact({
-            spect: s.spect ?? s.Spect ?? "G",
-            dist: s.dist ?? s.Dist ?? Math.random() * 500 + 10,
-            mag: s.mag ?? s.Mag ?? Math.random() * 6,
-            con: s.con ?? s.Con ?? "an unknown constellation",
-          }),
+  funFacts[String(s.hip ?? s.HIP)] ||
+  funFacts[Number(s.hip ?? s.HIP)] ||
+  generateFact({
+    spect: s.spect ?? s.Spect ?? "G",
+    dist: s.dist ?? s.Dist ?? Math.random() * 500 + 10,
+    mag: s.mag ?? s.Mag ?? Math.random() * 6,
+    con: s.con ?? s.Con ?? "an unknown constellation",
+  }),
       }));
 
   useEffect(() => {
