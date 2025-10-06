@@ -22,9 +22,9 @@ function StarOfTheDay() {
     <div
       style={{
         position: "absolute",
-        top: "5px",
+        top: "0px",
         right: "0px",
-        width: "340px",
+        width: "315px",
         background: "rgba(20,20,30,0.07)", // 👈 transparent background
         backdropFilter: "blur(12px) saturate(140%)",       // 👈 glass effect
         WebkitBackdropFilter: "blur(12px) saturate(140%)", // Safari support

@@ -38,8 +38,25 @@ export default function BlockChain() {
   }
 
   return (
-    <div style={{ textAlign: "center", marginTop: "30px" }}>
-      <h2>Blockchain Int. (Coin)</h2>
+    <div
+      style={{
+        background: "rgba(255, 255, 255, 0.07)", // glass base
+        border: "1px solid rgba(255, 255, 255, 0.05)",
+        borderRadius: "16px",
+        padding: "16px",
+        width: "185px",
+        maxHeight: "200px",
+        color: "#e5e7eb",
+        fontSize: "0.9rem",
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+        backdropFilter: "blur(12px) saturate(140%)",
+        WebkitBackdropFilter: "blur(12px) saturate(140%)",
+        textAlign: "center",
+      }}
+    >
+      <h3 style={{ marginBottom: "10px", color: "#c084fc" }}>Blockchain Int. (Coin)</h3>
 
       <button
         onClick={sendAstraeusCoin}
@@ -48,24 +65,26 @@ export default function BlockChain() {
           background: "#885ed4ff",
           color: "white",
           borderRadius: "10px",
-          padding: "12px 25px",
+          padding: "10px 20px",
           fontWeight: "bold",
-          cursor: "pointer"
+          cursor: "pointer",
+          border: "none",
+          transition: "all 0.3s ease",
         }}
       >
         {loading ? "Processing..." : "Hash 1k AstraeusCoins"}
       </button>
 
       {hash && (
-        <p style={{ marginTop: "20px" }}>
-          ✅ Transaction Hash:{" "}
+        <p style={{ marginTop: "12px", fontSize: "0.8rem" }}>
+          ✅ TX:{" "}
           <a
             href={`https://amoy.polygonscan.com/tx/${hash}`}
             target="_blank"
             rel="noreferrer"
             style={{ color: "#00eaff", textDecoration: "underline" }}
           >
-            {hash.slice(0, 12)}...
+            {hash.slice(0, 10)}...
           </a>
         </p>
       )}

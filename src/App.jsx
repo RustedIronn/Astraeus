@@ -8,7 +8,7 @@ import StarField from "./StarField";
 import ConstellationViewer from "./ConstellationViewer";
 import SpectralLegend from "./SpectralLegend";
 import StarGuide from "./StarGuide";
-import BlockChain from "./BlockChain"; // ✅ Import your blockchain button
+import BlockChain from "./BlockChain"; // ✅ Blockchain button
 
 function FlyToStar({ target }) {
   const { camera, controls } = useThree();
@@ -261,28 +261,9 @@ function App() {
       <SpectralLegend />
       <Disclaimer />
 
-      {/* 💸 AstraeusCoin Interaction Button */}
-      <div
-        style={{
-        position: "absolute",
-        left: "10px",
-        bottom: "5px",
-        background: "rgba(255, 255, 255, 0.07)", // glass base
-        border: "1px solid rgba(255, 255, 255, 0.05)", // subtle border
-        borderRadius: "16px",
-        padding: "16px",
-        width: "185px",
-        maxHeight: "200px",
-        color: "#e5e7eb",
-        fontSize: "0.9rem",
-        display: "flex",
-        flexDirection: "column",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-        backdropFilter: "blur(12px) saturate(140%)", // ✨ real glassmorph
-        WebkitBackdropFilter: "blur(12px) saturate(140%)",
-      }}
-      >
-      <BlockChain />
+      {/* 💸 Blockchain Button */}
+      <div style={{ position: "absolute", left: "10px", bottom: "8px" }}>
+        <BlockChain />
       </div>
     </div>
   );
