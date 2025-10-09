@@ -1,31 +1,27 @@
-import { useMemo, useRef, useEffect } from "react";
+import React, { useMemo, useRef, useEffect } from "react";
 import * as THREE from "three";
 import { useFrame, useThree, useLoader } from "@react-three/fiber";
 
-// 🎨 Extended palette for spectral classes
+// 🌈 Cached spectral color function
+const colorCache = new Map();
 function spectralToColor(spectral) {
-  if (!spectral || typeof spectral !== "string") return new THREE.Color("#ffffff");
-  const type = spectral.trim().charAt(0).toUpperCase();
-  switch (type) {
-    case "O": return new THREE.Color("#6f9eff"); // blue-violet
-    case "B": return new THREE.Color("#8cb4ff"); // bright blue
-    case "A": return new THREE.Color("#b5e0ff"); // cyan-white
-    case "F": return new THREE.Color("#f8f7ff"); // soft white
-    case "G": return new THREE.Color("#ffe6c7"); // warm yellow
-    case "K": return new THREE.Color("#ffb06b"); // amber
-    case "M": return new THREE.Color("#ff6f61"); // deep red-orange
-    case "L": return new THREE.Color("#d64b4b"); // crimson
-    case "T": return new THREE.Color("#a855f7"); // magenta-violet
-    case "Y": return new THREE.Color("#6b21a8"); // dark purple
-    default:  return new THREE.Color("#ffffff"); // fallback white
+  const type = spectral?.trim()?.[0]?.toUpperCase() ?? "G";
+  if (!colorCache.has(type)) {
+    const map = {
+      O: "#6f9eff", B: "#8cb4ff", A: "#b5e0ff", F: "#f8f7ff",
+      G: "#ffe6c7", K: "#ffb06b", M: "#ff6f61", L: "#d64b4b",
+      T: "#a855f7", Y: "#6b21a8"
+    };
+    colorCache.set(type, new THREE.Color(map[type] || "#ffffff"));
   }
+  return colorCache.get(type).clone();
 }
 
-export default function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
+function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
   const { camera, gl } = useThree();
   const raycasterRef = useRef(new THREE.Raycaster());
 
-  // Load star textures for each spectral type
+  // 🌌 Load star textures once
   const texturePaths = {
     O: "/textures/star_textures/star_O.jpg",
     B: "/textures/star_textures/star_B.jpg",
@@ -39,17 +35,20 @@ export default function StarField({ stars, pointsRef, selectedStar, onStarClick 
     Y: "/textures/star_textures/star_Y.jpg",
   };
 
-  const loadedTextures = {};
-  Object.entries(texturePaths).forEach(([spec, path]) => {
-    loadedTextures[spec] = useLoader(THREE.TextureLoader, path);
-  });
+  const loadedTextures = useMemo(() => {
+    const textures = {};
+    Object.entries(texturePaths).forEach(([spec, path]) => {
+      textures[spec] = useLoader(THREE.TextureLoader, path);
+    });
+    return textures;
+  }, []);
 
-  function getStarTexture(spectral) {
-    const type = spectral?.trim().charAt(0).toUpperCase();
+  const getStarTexture = (spectral) => {
+    const type = spectral?.trim()?.[0]?.toUpperCase();
     return loadedTextures[type] || loadedTextures.G;
-  }
+  };
 
-  // Geometry + color for point cloud stars
+  // 🌠 Generate geometry attributes
   const { positions, colors, sizes } = useMemo(() => {
     const pos = new Float32Array(stars.length * 3);
     const col = new Float32Array(stars.length * 3);
@@ -73,6 +72,7 @@ export default function StarField({ stars, pointsRef, selectedStar, onStarClick 
     return { positions: pos, colors: col, sizes: siz };
   }, [stars]);
 
+  // 🌟 Twinkle shaders
   const vertexShader = `
     attribute float size;
     varying vec3 vColor;
@@ -80,7 +80,7 @@ export default function StarField({ stars, pointsRef, selectedStar, onStarClick 
     void main() {
       vColor = color;
       vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-      float twinkle = 0.85 + 0.35 * sin(uTime * 3.0 + position.x * 0.25 + position.y * 0.25);
+      float twinkle = 0.85 + 0.35 * sin(uTime * 3.0 + position.x * 0.27 + position.y * 0.41 + position.z * 0.33);
       gl_PointSize = size * twinkle * (300.0 / -mvPosition.z);
       gl_Position = projectionMatrix * mvPosition;
     }
@@ -91,27 +91,45 @@ export default function StarField({ stars, pointsRef, selectedStar, onStarClick 
     void main() {
       float d = length(gl_PointCoord - vec2(0.5));
       if (d > 0.5) discard;
-      float star = smoothstep(0.5, 0.0, d);
-      float glow = exp(-10.0 * d * d);
-      vec3 color = vColor * (star + glow);
-      gl_FragColor = vec4(color, 1.0);
+      float core = smoothstep(0.4, 0.0, d);
+      float glow = smoothstep(0.5, 0.2, d);
+      vec3 color = vColor * (core * 1.2 + glow * 0.8);
+      gl_FragColor = vec4(color, 1.0 - d * 0.6);
     }
   `;
 
-  const materialRef = useRef();
-  const pulseRef = useRef({ mesh: null });
+  // ⚙️ Stable geometry & material
+  const geometry = useMemo(() => {
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geom.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    geom.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+    return geom;
+  }, [positions, colors, sizes]);
 
+  const material = useMemo(() => new THREE.ShaderMaterial({
+    vertexShader,
+    fragmentShader,
+    vertexColors: true,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    uniforms: { uTime: { value: 0 } },
+  }), []);
+
+  const pulseRef = useRef({ mesh: null });
+  const selectedGroupRef = useRef();
+
+  // 🌌 Animation loop
   useFrame((state) => {
-    if (materialRef.current) {
-      materialRef.current.uniforms.uTime.value = state.clock.elapsedTime;
-    }
+    material.uniforms.uTime.value = state.clock.elapsedTime;
     if (pulseRef.current.mesh) {
       const pulse = 1.15 + Math.sin(state.clock.elapsedTime * 2.0) * 0.25;
       pulseRef.current.mesh.scale.set(pulse, pulse, pulse);
     }
   });
 
-  // Setup raycasting + click
+  // ✨ Handle clicks
   useEffect(() => {
     if (!pointsRef.current) return;
     pointsRef.current.raycast = THREE.Points.prototype.raycast;
@@ -123,13 +141,11 @@ export default function StarField({ stars, pointsRef, selectedStar, onStarClick 
 
       raycasterRef.current.params.Points.threshold = 3;
       raycasterRef.current.setFromCamera({ x, y }, camera);
-
       const intersects = raycasterRef.current.intersectObject(pointsRef.current);
+
       if (intersects.length > 0) {
         const index = intersects[0].index;
-        if (index !== undefined && stars[index]) {
-          onStarClick?.(stars[index]); // 🔥 callback to parent
-        }
+        if (index !== undefined && stars[index]) onStarClick?.(stars[index]);
       }
     };
 
@@ -137,84 +153,63 @@ export default function StarField({ stars, pointsRef, selectedStar, onStarClick 
     return () => gl.domElement.removeEventListener("click", handleClick);
   }, [stars, camera, gl, pointsRef, onStarClick]);
 
+  // 🚀 Update selected star instantly (no lag)
+  useEffect(() => {
+    const g = selectedGroupRef.current;
+    if (!selectedStar || !g) return;
+
+    const color = spectralToColor(selectedStar.spect);
+    const texture = getStarTexture(selectedStar.spect);
+
+    g.position.set(selectedStar.x, selectedStar.y, selectedStar.z);
+    g.visible = true;
+
+    // update sphere
+    const starMat = g.children[0].material;
+    starMat.map = texture;
+    starMat.emissive = color;
+    starMat.emissiveIntensity = 0.5;
+    starMat.roughness = 0.4;
+    starMat.metalness = 0.3;
+    starMat.clearcoat = 1;
+    starMat.clearcoatRoughness = 0.2;
+
+    // aura + ring
+    g.children[1].material.color = color;
+    g.children[2].material.color = color;
+  }, [selectedStar]);
+
   return (
     <>
-      {/* Background stars as GPU point cloud */}
-      <points ref={pointsRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            array={positions}
-            count={positions.length / 3}
-            itemSize={3}
+      {/* ✨ GPU Starfield */}
+      <points ref={pointsRef} geometry={geometry} material={material} />
+
+      {/* 🌠 Lighting */}
+      <ambientLight intensity={0.4} color="#b2d8ff" />
+      <pointLight position={[0, 0, 0]} intensity={1.3} color="#ffffff" />
+
+      {/* 🌟 Persistent Selected Star */}
+      <group ref={selectedGroupRef} visible={false}>
+        <mesh>
+          <sphereGeometry args={[3, 64, 64]} />
+          <meshPhysicalMaterial />
+        </mesh>
+        <mesh ref={(el) => (pulseRef.current.mesh = el)}>
+          <sphereGeometry args={[6, 32, 32]} />
+          <meshBasicMaterial
+            transparent
+            opacity={0.45}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
           />
-          <bufferAttribute
-            attach="attributes-color"
-            array={colors}
-            count={colors.length / 3}
-            itemSize={3}
-          />
-          <bufferAttribute
-            attach="attributes-size"
-            array={sizes}
-            count={sizes.length}
-            itemSize={1}
-          />
-        </bufferGeometry>
-        <shaderMaterial
-          ref={materialRef}
-          vertexShader={vertexShader}
-          fragmentShader={fragmentShader}
-          vertexColors
-          transparent
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-          uniforms={{ uTime: { value: 0 } }}
-        />
-      </points>
-
-      {/* Scene lights for showing texture detail */}
-      <ambientLight intensity={0.6} />
-      <pointLight position={[0, 0, 0]} intensity={1.2} />
-
-      {/* Selected star with texture + emissive glow */}
-      {selectedStar && (
-        <group position={[selectedStar.x, selectedStar.y, selectedStar.z]}>
-          <mesh>
-            <sphereGeometry args={[3, 64, 64]} />
-            <meshPhysicalMaterial
-              map={getStarTexture(selectedStar.spect)}
-              emissive={spectralToColor(selectedStar.spect)}
-              emissiveIntensity={0.3}   // lower so texture is visible
-              roughness={0.8}
-              metalness={0.0}
-            />
-          </mesh>
-
-          {/* Pulsing aura */}
-          <mesh ref={(el) => (pulseRef.current.mesh = el)}>
-            <sphereGeometry args={[6, 32, 32]} />
-            <meshBasicMaterial
-              color={spectralToColor(selectedStar.spect)}
-              transparent
-              opacity={0.35}
-              blending={THREE.AdditiveBlending}
-              depthWrite={false}
-            />
-          </mesh>
-
-          {/* Outer ring aura */}
-          <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <ringGeometry args={[7, 8, 64]} />
-            <meshBasicMaterial
-              color={spectralToColor(selectedStar.spect)}
-              side={THREE.DoubleSide}
-              transparent
-              opacity={0.6}
-            />
-          </mesh>
-        </group>
-      )}
+        </mesh>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[7, 8, 64]} />
+          <meshBasicMaterial side={THREE.DoubleSide} transparent opacity={0.75} />
+        </mesh>
+      </group>
     </>
   );
 }
+
+export default React.memo(StarField);
