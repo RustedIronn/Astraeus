@@ -2,10 +2,38 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/planet.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Astraeus</title>
+
+    <!-- 🎨 Load Playwrite Fonts (Headings + Body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Iceberg&family=Iceland&display=swap"
+      rel="stylesheet"
+    >
+
+    <!-- 🪶 Global Font Styling -->
+    <style>
+      /* Body / App-wide font */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Iceland", sans-serif;
+        background: #000;
+        color: #fff;
+      }
+
+      /* Headings font override */
+      h1, h2, h3, h4, h5, h6 {
+        font-family: "Iceberg", sans-serif;
+        font-weight: 400;
+        letter-spacing: 0.5px;
+      }
+    </style>
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

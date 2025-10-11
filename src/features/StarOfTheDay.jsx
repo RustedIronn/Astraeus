@@ -6,13 +6,73 @@ function StarOfTheDay() {
 
   useEffect(() => {
     const apiKey = import.meta.env.VITE_NASA_API_KEY;
-    fetch(`https://api.nasa.gov/planetary/apod?api_key=${apiKey}`)
-      .then((res) => res.json())
-      .then(setData)
-      .catch(console.error);
+    const today = new Date().toISOString().split("T")[0];
+    const cachedData = localStorage.getItem("apodData");
+    const cachedDate = localStorage.getItem("apodDate");
+
+    // Load from cache if available for today
+    if (cachedData && cachedDate === today) {
+      setData(JSON.parse(cachedData));
+      return;
+    }
+
+    const fetchAPOD = async () => {
+      try {
+        // Fetch today’s APOD
+        const res = await fetch(
+          `https://api.nasa.gov/planetary/apod?api_key=${apiKey}`
+        );
+        const todayData = await res.json();
+
+        // Check yesterday’s APOD to detect repeat
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yDate = yesterday.toISOString().split("T")[0];
+        const resY = await fetch(
+          `https://api.nasa.gov/planetary/apod?api_key=${apiKey}&date=${yDate}`
+        );
+        const yesterdayData = await resY.json();
+
+        // If NASA repeated same image, fetch a random one
+        if (todayData.url === yesterdayData.url) {
+          const randomRes = await fetch(
+            `https://api.nasa.gov/planetary/apod?api_key=${apiKey}&count=1`
+          );
+          const [randomData] = await randomRes.json();
+          setData(randomData);
+          localStorage.setItem("apodData", JSON.stringify(randomData));
+          localStorage.setItem("apodDate", today);
+        } else {
+          setData(todayData);
+          localStorage.setItem("apodData", JSON.stringify(todayData));
+          localStorage.setItem("apodDate", today);
+        }
+      } catch (err) {
+        console.error("Error fetching APOD:", err);
+      }
+    };
+
+    fetchAPOD();
   }, []);
 
-  if (!data) return <p style={{ color: "white" }}>Loading The Space Brief...</p>;
+  if (!data)
+    return (
+      <div
+        style={{
+          position: "absolute",
+          top: "0px",
+          right: "0px",
+          width: "315px",
+          padding: "16px",
+          borderRadius: "12px",
+          background: "rgba(20,20,30,0.3)",
+          color: "white",
+          fontFamily: "Segoe UI, Roboto, sans-serif",
+        }}
+      >
+        <p>Loading The Space Brief...</p>
+      </div>
+    );
 
   const text = showMore
     ? data.explanation
@@ -25,9 +85,9 @@ function StarOfTheDay() {
         top: "0px",
         right: "0px",
         width: "315px",
-        background: "rgba(20,20,30,0.07)", // 👈 transparent background
-        backdropFilter: "blur(12px) saturate(140%)",       // 👈 glass effect
-        WebkitBackdropFilter: "blur(12px) saturate(140%)", // Safari support
+        background: "rgba(20,20,30,0.07)",
+        backdropFilter: "blur(12px) saturate(140%)",
+        WebkitBackdropFilter: "blur(12px) saturate(140%)",
         padding: "16px",
         borderRadius: "12px",
         color: "#e5e7eb",

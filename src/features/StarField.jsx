@@ -8,10 +8,18 @@ function spectralToColor(spectral) {
   const type = spectral?.trim()?.[0]?.toUpperCase() ?? "G";
   if (!colorCache.has(type)) {
     const map = {
-      O: "#6f9eff", B: "#8cb4ff", A: "#b5e0ff", F: "#f8f7ff",
-      G: "#ffe6c7", K: "#ffb06b", M: "#ff6f61", L: "#d64b4b",
-      T: "#a855f7", Y: "#6b21a8"
-    };
+  O: "#6faaff", // deep blue, cooler and richer
+  B: "#8fc1ff", // soft azure blue
+  A: "#c8e4ff", // crisp white-blue
+  F: "#fff4d6", // creamy pale yellow-white
+  G: "#ffd7a0", // balanced warm yellow
+  K: "#ff9a5e", // soft orange
+  M: "#ff6a5c", // reddish-orange
+  L: "#e85a7b", // muted pink-red
+  T: "#b372ff", // soft violet
+  Y: "#7a3fcf", // deep purple
+};
+
     colorCache.set(type, new THREE.Color(map[type] || "#ffffff"));
   }
   return colorCache.get(type).clone();
@@ -66,7 +74,8 @@ function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
       col[i * 3 + 1] = c.g;
       col[i * 3 + 2] = c.b;
 
-      siz[i] = THREE.MathUtils.clamp(14 - s.mag * 1.5, 2, 12);
+      siz[i] = THREE.MathUtils.clamp(14 - s.mag * 1.2, 3, 12);
+
     });
 
     return { positions: pos, colors: col, sizes: siz };

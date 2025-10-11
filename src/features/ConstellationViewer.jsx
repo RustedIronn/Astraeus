@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { useMemo } from "react";
-import constellationLines from "./constellationLines.json";
+import constellationLines from "../constellationLines.json";
 
 function ConstellationViewer({ stars, selectedStar }) {
   const lineData = useMemo(() => {
@@ -18,29 +18,30 @@ function ConstellationViewer({ stars, selectedStar }) {
       .filter(Boolean);
   }, [stars, selectedStar]);
 
-  const geometry = useMemo(() => {
+  const lineSegments = useMemo(() => {
+    if (!lineData.length) return null;
+
     const points = [];
     lineData.forEach(([s1, s2]) => {
       points.push(new THREE.Vector3(s1.x, s1.y, s1.z));
       points.push(new THREE.Vector3(s2.x, s2.y, s2.z));
     });
-    const geo = new THREE.BufferGeometry().setFromPoints(points);
-    return geo;
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({
+      color: 0x66ccff,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+
+    return new THREE.LineSegments(geometry, material);
   }, [lineData]);
 
-  if (!selectedStar || lineData.length === 0) return null;
+  if (!lineSegments) return null;
 
-  return (
-  <lineSegments geometry={geometry}>
-    <lineBasicMaterial
-      color={new THREE.Color(0x66ccff)} // softer cyan
-      transparent
-      opacity={0.85}
-      blending={THREE.AdditiveBlending}
-      depthWrite={false}
-    />
-  </lineSegments>
-  );
+  return <primitive object={lineSegments} />;
 }
 
 export default ConstellationViewer;
