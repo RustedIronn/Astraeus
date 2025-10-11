@@ -2,7 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { AnimatePresence } from "framer-motion";
 import { useRef, useState } from "react";
-import useStars from "./UseStars";
+import useStars from "./useStars";
 import StarField from "../features/StarField";
 import ConstellationViewer from "../features/ConstellationViewer";
 import StarOfTheDay from "../features/StarOfTheDay";
