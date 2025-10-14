@@ -121,7 +121,7 @@ CSV parsing handled via [`papaparse`](https://www.papaparse.com/).
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/astraeus.git
+git clone https://github.com/RustedIronn/astraeus.git
 cd astraeus
 
 # Install dependencies
