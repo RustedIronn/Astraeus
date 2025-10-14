@@ -1,28 +1,40 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 export default function CinematicIntro({ onFinish }) {
   const [show, setShow] = useState(true);
-  const [audio, setAudio] = useState(null);
+  const audioRef = useRef(null);
+  const hasEnded = useRef(false); // prevent multiple finishes
+
+  const endIntro = useCallback(() => {
+    if (hasEnded.current) return;
+    hasEnded.current = true;
+    setShow(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    if (typeof onFinish === "function") onFinish();
+  }, [onFinish]);
 
   useEffect(() => {
+    // run only once on mount
     const music = new Audio("/interstellar-theme.mp3");
     music.volume = 0.3;
     music.play().catch(() => console.log("Autoplay blocked"));
-    setAudio(music);
+    audioRef.current = music;
 
-    const timer = setTimeout(() => {
-      setShow(false);
-      music.pause();
-      music.currentTime = 0;
-      onFinish();
-    }, 6000);
+    const timer = setTimeout(() => endIntro(), 6000);
+    const handleClick = () => endIntro();
+
+    window.addEventListener("click", handleClick);
 
     return () => {
       clearTimeout(timer);
+      window.removeEventListener("click", handleClick);
       music.pause();
     };
-  }, [onFinish]);
+  }, [endIntro]);
 
   return (
     <AnimatePresence>
@@ -37,7 +49,8 @@ export default function CinematicIntro({ onFinish }) {
             left: 0,
             width: "100vw",
             height: "100vh",
-            background: "radial-gradient(circle at center, #000010 0%, #000000 100%)",
+            background:
+              "radial-gradient(circle at center, #000010 0%, #000000 100%)",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
@@ -45,6 +58,7 @@ export default function CinematicIntro({ onFinish }) {
             color: "white",
             fontFamily: "Orbitron, sans-serif",
             zIndex: 9999,
+            cursor: "pointer",
           }}
         >
           <motion.h1
@@ -72,6 +86,21 @@ export default function CinematicIntro({ onFinish }) {
             }}
           >
             Celestial Systems Online ✦
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.6 }}
+            transition={{ delay: 3.5, duration: 1.5 }}
+            style={{
+              position: "absolute",
+              bottom: "40px",
+              fontSize: "0.9rem",
+              color: "#ccc",
+              letterSpacing: "2px",
+            }}
+          >
+            (Click anywhere to skip)
           </motion.p>
         </motion.div>
       )}

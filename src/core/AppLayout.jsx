@@ -9,9 +9,11 @@ import StarOfTheDay from "../features/StarOfTheDay";
 import SpectralLegend from "../analytics/SpectralLegend";
 import StarGuide from "../features/StarGuide";
 import FlyToStar from "./FlyToStar";
+import StarCanvas from "./StarCanvas";
 import CinematicIntro from "../features/CinematicIntro";
 import StarAnalytics from "../analytics/StarAnalytics";
 import StarInfoCard from "../ui/StarInfoCard";
+import ErrorBoundary from "../ErrorBoundary";
 
 export default function AppLayout() {
   const { stars, loading, selectedStar, setSelectedStar } = useStars();
@@ -27,7 +29,11 @@ export default function AppLayout() {
         background:
           theme === "night"
             ? "radial-gradient(circle at center, #0a0018 0%, #000000 100%)"
-            : "linear-gradient(to bottom, #b3e5fc, #e3f2fd)",
+            : "radial-gradient(circle at 50% 20%, #cdeaff 0%, #9ed8ff 40%, #78b4f8 70%, #4a90e2 100%)",
+        boxShadow:
+        theme === "day"
+          ? "inset 0 0 200px rgba(255,255,255,0.4), inset 0 0 300px rgba(255,255,255,0.25)"
+          : "none",
         position: "relative",
         transition: "background 1s ease",
         overflow: "hidden",
@@ -98,24 +104,15 @@ export default function AppLayout() {
       )}
 
       {/* 🌌 3D Canvas */}
-      <Canvas camera={{ position: [0, 0, 2000] }}>
-        <StarField
-          stars={stars}
-          pointsRef={pointsRef}
-          selectedStar={selectedStar}
-          onStarClick={setSelectedStar}
-        />
-        <ConstellationViewer stars={stars} selectedStar={selectedStar} />
-        <OrbitControls
-          ref={controlsRef}
-          enableZoom
-          enablePan
-          enableRotate
-          zoomSpeed={0.5}
-          panSpeed={0.5}
-        />
-        <FlyToStar target={selectedStar} controlsRef={controlsRef} />
-      </Canvas>
+      <ErrorBoundary>
+ <StarCanvas
+  stars={stars}
+  selectedStar={selectedStar}
+  setSelectedStar={setSelectedStar}
+  theme={theme}
+  pointsRef={pointsRef}
+/>
+</ErrorBoundary>
 
       {/* ⭐ Star Guide */}
       <StarGuide stars={stars} onSelect={setSelectedStar} theme={theme} setTheme={setTheme} />

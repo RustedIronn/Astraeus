@@ -1,54 +1,134 @@
-# Astraeus
+# 🌌 Astraeus — Interactive Stellar Visualization System
 
-**Astraeus** is an interactive web application that visualizes astronomical data and integrates blockchain functionality for data and token transactions.  
-The project demonstrates real-time 3D rendering, blockchain connectivity, and structured data handling using modern web technologies.
-
----
-
-## Overview
-
-Astraeus allows users to explore stars, constellations, and spectral classifications through a 3D environment.  
-It also includes blockchain integration with an ERC-20 smart contract named **AstraeusCoin**, enabling simple token transfers via a connected wallet.
+**Astraeus** is an interactive 3D web application for exploring the cosmos.  
+It visualizes real astronomical data from the HYG star catalog using **Three.js**, **React Three Fiber**, and **Framer Motion**.  
+Each star is rendered in real-time based on its spectral type, magnitude, and distance — creating a scientifically grounded yet cinematic experience.
 
 ---
 
-## Features
+## ✨ Overview
 
-- **3D Star Visualization:** Rendered using `@react-three/fiber` and `three.js`.  
-- **Constellation Viewer:** Interactive viewing and exploration of constellation data.  
-- **Spectral Type Legend:** Categorization of stars by spectral class.  
-- **Data Parsing:** Uses `PapaParse` to process and display star data from CSV files.  
-- **Blockchain Integration:** Connects to the Ethereum network using `ethers.js` for contract interaction.  
-- **Transaction Logging:** Displays transaction hashes and confirmations in real time.
+Astraeus bridges the gap between **data analysis** and **astronomical visualization**.  
+Users can explore star clusters, view constellation structures, analyze spectral data, and learn contextual facts about individual stars — all within a smooth, dynamic 3D interface.
 
 ---
 
-## Tech Stack
+## 🧠 Core Features
 
-**Frontend:**  
-React.js, @react-three/fiber, three.js, PapaParse, Tailwind CSS  
+### 🪐 Real-Time 3D Starfield
+- Built with **React Three Fiber** and **custom GPU shaders** for realistic twinkling and colour gradation.  
+- Each star’s brightness and hue correspond to its **spectral classification (OBAFGKMLTY)**.  
+- Click any star to bring up detailed metadata and fun contextual facts.
 
-**Blockchain:**  
-Solidity, ethers.js, Remix IDE, MetaMask  
+### 🌟 Star Analytics (Research Module)
+The **StarAnalytics** component performs statistical and visual analysis on the HYG dataset, powering quantitative exploration:
+- Calculates **average**, **median**, and **distribution** values for magnitude, luminosity, and distance.  
+- Identifies **brightest**, **nearest**, and **most luminous** stars dynamically.  
+- Generates a **spectral type distribution chart** using *Recharts*, with live tooltips and percentage labels.  
+- Provides concise **fact summaries** and **dataset insights** (dominant spectral class, stellar density, temperature ranges).  
+- Designed as a research-focused submodule in the Astraeus system.
 
-**Deployment:**  
-Vercel  
+### 🧭 Constellation Viewer
+- Highlights constellations dynamically when a star is selected.  
+- Uses coordinate-linked data from a JSON mapping (`constellationLines.json`).  
+- Provides structural context within the galactic dataset.
+
+### 📚 Star Guide Panel
+- A searchable, scrollable list of all parsed stars.  
+- Displays name, constellation, and classification in an elegant glassmorphic sidebar.  
+- Integrated theme toggle for day/night switching.
+
+### 🌠 Star Info Card
+- Expands with animation (Framer Motion) when a star is selected.  
+- Displays detailed data (name, magnitude, distance, spectral type, and a dynamically generated fun fact).  
+
+### 🌅 Star of the Day
+- Highlights a random, notable star with a daily factoid to add user engagement.
+
+### 🎨 Spectral Legend
+- Displays the colour-temperature mapping for all spectral types for quick scientific reference.
+
+### 🎬 Cinematic Intro
+- Animated introduction using Framer Motion for smooth onboarding transitions and ambience.
 
 ---
 
-## Smart Contract
+## 🧩 Project Architecture
 
-- **Name:** AstraeusCoin  
-- **Type:** ERC-20  
-- **Address:** `0x500b4351b96b3cAce599E93842EE0248e1FF2Cee`  
-Implements standard ERC-20 token functionality for blockchain testing and interaction within Astraeus.
+src/
+ ├── analytics/
+ │   ├── SpectralLegend.jsx        # Colour-temperature legend for spectral types
+ │   └── StarAnalytics.jsx         # Statistical + visual data analysis module
+ │
+ ├── core/
+ │   ├── AppLayout.jsx             # Root layout, orchestrates all modules
+ │   ├── FlyToStar.jsx             # Camera transition system for star focus
+ │   ├── StarCanvas.jsx            # Three.js canvas wrapper
+ │   ├── useDeepSkyObjects.jsx     # Hook for handling future nebula/DSO data
+ │   └── useStars.jsx              # Core star data loader and mapping logic
+ │
+ ├── features/
+ │   ├── BackgroundMilkyway.jsx    # (Planned) Background sky panorama handler
+ │   ├── CinematicIntro.jsx        # Animated intro scene and onboarding
+ │   ├── ClickHandler.jsx          # Handles object click/raycast events
+ │   ├── ConstellationViewer.jsx   # Draws constellation line connections
+ │   ├── DeepSkyField.jsx          # (Planned) Nebula or deep sky field handler
+ │   ├── StarField.jsx             # Main GPU-rendered 3D starfield
+ │   ├── StarGuide.jsx             # Sidebar UI for browsing/searching stars
+ │   └── StarOfTheDay.jsx          # Random daily featured star generator
+ │
+ ├── ui/
+ │   ├── LoadingOverlay.jsx        # Animated loading spinner and intro fade
+ │   └── StarInfoCard.jsx          # Displays detailed star info + facts
+ │
+ ├── App.css                       # Global styles
+ ├── App.jsx                       # Entry point linking layout + routes
+ ├── constellationLines.json       # Constellation mapping data (HIP IDs)
+ ├── ErrorBoundary.jsx             # Fallback component for runtime errors
+ ├── index.css                     # Base style resets
+ └── main.jsx                      # Application bootstrap
+
 
 ---
 
-## Installation
+## 🧮 Data Source
+
+**HYG Star Database v4.2**  
+The dataset includes:
+- Hipparcos, Yale, and Gliese cross-referenced star data  
+- 119,000+ stars  
+- Parameters: magnitude, distance, luminosity, spectral type, and coordinates (x, y, z)
+
+CSV parsing handled via [`papaparse`](https://www.papaparse.com/).
+
+---
+
+## 🧰 Tech Stack
+
+| Category | Technology |
+|-----------|-------------|
+| Framework | **React (Vite)** |
+| 3D Engine | **Three.js + React Three Fiber** |
+| Animation | **Framer Motion** |
+| Charts | **Recharts** |
+| Data Parsing | **PapaParse** |
+| UI Styling | **Inline Glassmorphism + Custom Fonts (Iceland, Nova Square, Playwrite US Modern)** |
+| Deployment | **Vercel** |
+
+---
+
+## 🚀 Installation & Setup
 
 ```bash
-git clone https://github.com/RustedIronn/Astraeus.git
-cd Astraeus
+# Clone the repository
+git clone https://github.com/yourusername/astraeus.git
+cd astraeus
+
+# Install dependencies
 npm install
+
+# Start development server
 npm run dev
+
+# Build for production
+npm run build

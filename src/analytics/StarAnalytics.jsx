@@ -14,7 +14,7 @@ import {
 export default function StarAnalytics() {
   const [stats, setStats] = useState(null);
   const [spectralData, setSpectralData] = useState([]);
-  const [funFact, setFunFact] = useState("");
+  const [highlight, setHighlight] = useState("");
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
 
@@ -44,6 +44,7 @@ export default function StarAnalytics() {
 
         const avg = (arr) =>
           arr.reduce((a, b) => a + valid(b), 0) / arr.length || 0;
+
         const median = (arr) => {
           const sorted = [...arr].sort((a, b) => a - b);
           const mid = Math.floor(sorted.length / 2);
@@ -98,40 +99,56 @@ export default function StarAnalytics() {
                 Y: "~600 K",
               }[type] || "—",
           }))
-          .sort((a, b) => "OBAFGKMLTY".indexOf(a.type) - "OBAFGKMLTY".indexOf(b.type));
+          .sort(
+            (a, b) =>
+              "OBAFGKMLTY".indexOf(a.type) - "OBAFGKMLTY".indexOf(b.type)
+          );
 
         const dominant =
           spectralArr.length > 0
             ? spectralArr.reduce((a, b) => (a.count > b.count ? a : b))
             : { type: "?", count: 0 };
 
-        const facts = [
-          `Dominant type: ${dominant.type}-class — ${
-            {
-              O: "colossal blue titans, ultra-rare and short-lived.",
-              B: "brilliant blue giants — high energy and heat.",
-              A: "white-hot like Sirius, young and dazzling.",
-              F: "yellow-white stars, a bit hotter than our Sun.",
-              G: "balanced, sunlike stars with steady energy.",
-              K: "orange dwarfs — aging gracefully and stable.",
-              M: "red dwarfs — small but the most common in our galaxy.",
-            }[dominant.type] || "unique and fascinating."
-          }`,
-          `Average magnitude (brightness): ${avgMag.toFixed(
-            2
-          )} • Median: ${medMag.toFixed(2)}`,
-          `Brightest star: ${brightest.proper || "Unnamed"} (mag ${
-            brightest.mag
-          })`,
-          `Most luminous star: ${
-            mostLuminous.proper || "Unnamed"
-          } (${mostLuminous.lum.toFixed(1)}× Sun)`,
-          `Nearest star: ${nearest.proper || "Unnamed"} (${nearest.dist.toFixed(
-            2
-          )} ly)`,
-        ];
+        // 🌠 Filter unnamed stars from highlight pool
+        const named = {
+          nearest:
+            nearest.proper && nearest.proper.trim() !== ""
+              ? nearest.proper
+              : null,
+          brightest:
+            brightest.proper && brightest.proper.trim() !== ""
+              ? brightest.proper
+              : null,
+          mostLuminous:
+            mostLuminous.proper && mostLuminous.proper.trim() !== ""
+              ? mostLuminous.proper
+              : null,
+        };
 
-        setFunFact(facts[Math.floor(Math.random() * facts.length)]);
+        // 🪐 Refined highlight set
+        const highlights = [
+          `Dominant spectral class: ${dominant.type} — ${
+            {
+              O: "massive blue-white supergiants, rare and short-lived.",
+              B: "energetic blue stars with high radiative output.",
+              A: "white stars like Sirius, luminous and youthful.",
+              F: "yellow-white main sequence stars, hotter than our Sun.",
+              G: "solar-type main sequence stars, steady and stable.",
+              K: "cooler orange dwarfs, long-lived and balanced.",
+              M: "red dwarfs — faint, enduring, and most common in the Milky Way.",
+            }[dominant.type] || "representing a unique stellar population."
+          }`,
+          `Average apparent magnitude: ${avgMag.toFixed(2)} (median ${medMag.toFixed(
+            2
+          )})`,
+          named.nearest
+            ? `Closest named system: ${named.nearest} — ${nearest.dist.toFixed(
+                2
+              )} ly`
+            : null,
+        ].filter(Boolean); // remove nulls
+
+        setHighlight(highlights[Math.floor(Math.random() * highlights.length)]);
 
         setStats({
           totalStars,
@@ -139,11 +156,11 @@ export default function StarAnalytics() {
           medMag: medMag.toFixed(2),
           avgDist: avgDist.toFixed(2),
           avgLum: avgLum.toFixed(2),
-          nearest: nearest.proper || "Unknown",
+          nearest: named.nearest || "—",
           nearestDist: nearest.dist,
-          brightest: brightest.proper || "Unknown",
+          brightest: named.brightest || "—",
           brightestMag: brightest.mag,
-          mostLuminous: mostLuminous.proper || "Unknown",
+          mostLuminous: named.mostLuminous || "—",
           mostLuminousLum: mostLuminous.lum,
           dominantType: dominant.type,
         });
@@ -160,7 +177,7 @@ export default function StarAnalytics() {
         border: "1px solid rgba(255, 255, 255, 0.05)",
         borderRadius: "16px",
         padding: "16px",
-        width: "320px",
+        width: "315px",
         color: "#e5e7eb",
         fontSize: "1.0rem",
         display: "flex",
@@ -171,13 +188,13 @@ export default function StarAnalytics() {
         WebkitBackdropFilter: "blur(12px) saturate(140%)",
         textAlign: "center",
         overflow: "hidden",
-        maxHeight: expanded ? "555px" : "330px",
+        maxHeight: expanded ? "800px" : "330px",
         transition: "max-height 0.6s ease",
       }}
     >
       <h3
         style={{
-          marginBottom: "10px",
+          marginBottom: "0px",
           color: "#a855f7",
           fontFamily: "'Iceberg', sans-serif",
           letterSpacing: "0.5px",
@@ -187,20 +204,20 @@ export default function StarAnalytics() {
       </h3>
 
       {loading ? (
-        <p style={{ color: "#9ca3af" }}>Loading galactic data...</p>
+        <p style={{ color: "#9ca3af" }}>Analyzing celestial data...</p>
       ) : (
         <>
           <p>
-            Total Stars: <b>{stats.totalStars.toLocaleString()}</b>
+            Catalogued Stars: <b>{stats.totalStars.toLocaleString()}</b>
           </p>
           <p>
-            Dominant Type: <b>{stats.dominantType}</b>
+            Dominant Class: <b>{stats.dominantType}</b>
           </p>
           <p style={{ color: "#fbbf24" }}>
             Brightest: <b>{stats.brightest}</b> (mag {stats.brightestMag})
           </p>
 
-          {/* 🔭 Spectral Bar Chart */}
+          {/* 🔭 Spectral Distribution */}
           <div style={{ width: "100%", height: 140, marginTop: "4px" }}>
             <ResponsiveContainer>
               <BarChart data={spectralData}>
@@ -216,17 +233,24 @@ export default function StarAnalytics() {
                     border: "1px solid rgba(168, 85, 247, 0.4)",
                     color: "white",
                   }}
-                  formatter={(value, name, entry) =>
-                    [`${value} stars`, `Type ${entry.payload.type}`]
-                  }
+                  formatter={(value, name, entry) => [
+                    `${value} stars`,
+                    `Type ${entry.payload.type}`,
+                  ]}
                 />
                 <Bar dataKey="count" fill="#a855f7" radius={[6, 6, 0, 0]}>
-                  <LabelList dataKey="percent" position="top" fill="#93c5fd" fontSize={10} />
+                  <LabelList
+                    dataKey="percent"
+                    position="top"
+                    fill="#93c5fd"
+                    fontSize={10}
+                  />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
 
+          {/* ✨ Dynamic Highlight */}
           <p
             style={{
               marginTop: "10px",
@@ -236,7 +260,7 @@ export default function StarAnalytics() {
               lineHeight: "1.3rem",
             }}
           >
-            {funFact}
+            {highlight}
           </p>
 
           {expanded && (
@@ -249,19 +273,19 @@ export default function StarAnalytics() {
               }}
             >
               <p>
-                Avg Distance: <b>{stats.avgDist} ly</b>
+                Mean Distance: <b>{stats.avgDist} ly</b>
               </p>
               <p>
-                Median Magnitude: <b>{stats.medMag}</b>
+                Median Brightness: <b>{stats.medMag}</b>
               </p>
               <p>
-                Avg Luminosity: <b>{stats.avgLum}</b>
+                Average Luminosity: <b>{stats.avgLum}</b>
               </p>
               <p>
-                Nearest Star: <b>{stats.nearest}</b> ({stats.nearestDist} ly)
+                Nearest Named System: <b>{stats.nearest}</b> ({stats.nearestDist} ly)
               </p>
               <p>
-                Most Luminous: <b>{stats.mostLuminous}</b> (
+                Peak Luminosity Source: <b>{stats.mostLuminous}</b> (
                 {stats.mostLuminousLum})
               </p>
             </div>
@@ -281,7 +305,7 @@ export default function StarAnalytics() {
               transition: "0.3s",
             }}
           >
-            {expanded ? "Show Less ▲" : "More Stats ▼"}
+            {expanded ? "Show Less ▲" : "Expand ▼"}
           </button>
 
           <p

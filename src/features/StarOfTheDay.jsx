@@ -5,54 +5,54 @@ function StarOfTheDay() {
   const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
-    const apiKey = import.meta.env.VITE_NASA_API_KEY;
     const today = new Date().toISOString().split("T")[0];
-    const cachedData = localStorage.getItem("apodData");
-    const cachedDate = localStorage.getItem("apodDate");
+    const cachedData = localStorage.getItem("spaceNewsData");
+const cachedTime = localStorage.getItem("spaceNewsTime");
 
-    // Load from cache if available for today
-    if (cachedData && cachedDate === today) {
-      setData(JSON.parse(cachedData));
-      return;
-    }
+if (cachedData && cachedTime) {
+  const now = Date.now();
+  const diffHours = (now - parseInt(cachedTime, 10)) / (1000 * 60 * 60);
 
-    const fetchAPOD = async () => {
+  // Only reuse cache if it's less than 5 hours old
+  if (diffHours < 5) {
+    setData(JSON.parse(cachedData));
+    return;
+  }
+}
+
+    const fetchNews = async () => {
       try {
-        // Fetch today’s APOD
-        const res = await fetch(
-          `https://api.nasa.gov/planetary/apod?api_key=${apiKey}`
-        );
-        const todayData = await res.json();
+        const res = await fetch("https://api.spaceflightnewsapi.net/v4/articles/?limit=1");
+        if (!res.ok) throw new Error(`Spaceflight API error: ${res.status}`);
+        const json = await res.json();
 
-        // Check yesterday’s APOD to detect repeat
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yDate = yesterday.toISOString().split("T")[0];
-        const resY = await fetch(
-          `https://api.nasa.gov/planetary/apod?api_key=${apiKey}&date=${yDate}`
-        );
-        const yesterdayData = await resY.json();
+        const article = json.results?.[0];
+        if (!article) throw new Error("No article found in response");
 
-        // If NASA repeated same image, fetch a random one
-        if (todayData.url === yesterdayData.url) {
-          const randomRes = await fetch(
-            `https://api.nasa.gov/planetary/apod?api_key=${apiKey}&count=1`
-          );
-          const [randomData] = await randomRes.json();
-          setData(randomData);
-          localStorage.setItem("apodData", JSON.stringify(randomData));
-          localStorage.setItem("apodDate", today);
-        } else {
-          setData(todayData);
-          localStorage.setItem("apodData", JSON.stringify(todayData));
-          localStorage.setItem("apodDate", today);
-        }
+        const formattedData = {
+          title: article.title,
+          explanation: article.summary,
+          url: article.image_url,
+          articleUrl: article.url,
+          media_type: "image",
+        };
+
+        setData(formattedData);
+        localStorage.setItem("spaceNewsData", JSON.stringify(formattedData));
+        localStorage.setItem("spaceNewsTime", Date.now().toString());
       } catch (err) {
-        console.error("Error fetching APOD:", err);
+        console.error("Error fetching space news:", err);
+        setData({
+          title: "Space News Unavailable",
+          explanation:
+            "The space news feed is temporarily unreachable. Please check back later!",
+          url: "/fallback.jpg",
+          media_type: "image",
+        });
       }
     };
 
-    fetchAPOD();
+    fetchNews();
   }, []);
 
   if (!data)
@@ -67,10 +67,10 @@ function StarOfTheDay() {
           borderRadius: "12px",
           background: "rgba(20,20,30,0.3)",
           color: "white",
-          fontFamily: "Segoe UI, Roboto, sans-serif",
+          fontFamily: "Iceberg, sans-serif",
         }}
       >
-        <p>Loading The Space Brief...</p>
+        <p>Fetching today's space brief...</p>
       </div>
     );
 
@@ -91,17 +91,32 @@ function StarOfTheDay() {
         padding: "16px",
         borderRadius: "12px",
         color: "#e5e7eb",
-        fontFamily: "Segoe UI, Roboto, sans-serif",
+        fontFamily: "Iceberg, sans-serif",
         maxHeight: "480px",
         overflowY: "auto",
         boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
         border: "1px solid rgba(255, 255, 255, 0.03)",
       }}
     >
-      <h3 style={{ margin: "0 0 6px 0", fontSize: "18px", color: "#a78bfa" }}>
+      <h3
+        style={{
+          margin: "0 0 6px 0",
+          fontSize: "18px",
+          color: "#a78bfa",
+          fontFamily: "'Iceberg', sans-serif",
+        }}
+      >
         ⭐ The Space Brief
       </h3>
-      <p style={{ margin: "0 0 10px 0", fontWeight: "bold", fontSize: "15px" }}>
+
+      <p
+        style={{
+          margin: "0 0 10px 0",
+          fontWeight: "bold",
+          fontSize: "15px",
+          fontFamily: "'Iceland', sans-serif",
+        }}
+      >
         {data.title}
       </p>
 
@@ -118,7 +133,14 @@ function StarOfTheDay() {
         />
       )}
 
-      <p style={{ marginTop: "10px", fontSize: "14px", lineHeight: "1.4" }}>
+      <p
+        style={{
+          marginTop: "10px",
+          fontSize: "14px",
+          lineHeight: "1.4",
+          fontFamily: "'Iceland', sans-serif",
+        }}
+      >
         {text}
       </p>
 
@@ -127,8 +149,10 @@ function StarOfTheDay() {
         style={{
           marginTop: "10px",
           padding: "6px 12px",
-          fontSize: "13px",
-          fontWeight: "600",
+          fontSize: "14px",
+          fontFamily: "'Iceberg', sans-serif",
+          letterSpacing: "0.8px",
+          fontWeight: "400",
           color: "violet",
           background: "transparent",
           border: "1px solid violet",
@@ -155,6 +179,40 @@ function StarOfTheDay() {
       >
         {showMore ? "Show Less" : "Read More"}
       </button>
+
+      {data.articleUrl && (
+        <a
+          href={data.articleUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "inline-block",
+            marginTop: "10px",
+            padding: "8px 16px",
+            fontFamily: "'Iceland', sans-serif",
+            fontSize: "14px",
+            letterSpacing: "0.8px",
+            color: "#b88cff",
+            background: "transparent",
+            borderRadius: "6px",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+            textDecoration: "none",
+          }}
+          onMouseOver={(e) => {
+            e.target.style.color = "#ffffff";
+            e.target.style.textShadow = "0 0 8px #b88cff";
+            e.target.style.transform = "translateX(4px)";
+          }}
+          onMouseOut={(e) => {
+            e.target.style.color = "#b88cff";
+            e.target.style.textShadow = "none";
+            e.target.style.transform = "translateX(0)";
+          }}
+        >
+           Explore the full article
+        </a>
+      )}
     </div>
   );
 }
