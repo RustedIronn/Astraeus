@@ -55,39 +55,36 @@ The **StarAnalytics** component performs statistical and visual analysis on the 
 
 ## 🧩 Project Architecture
 
+```bash
 src/
- ├── analytics/
- │   ├── SpectralLegend.jsx        # Colour-temperature legend for spectral types
- │   └── StarAnalytics.jsx         # Statistical + visual data analysis module
- │
- ├── core/
- │   ├── AppLayout.jsx             # Root layout, orchestrates all modules
- │   ├── FlyToStar.jsx             # Camera transition system for star focus
- │   ├── StarCanvas.jsx            # Three.js canvas wrapper
- │   ├── useDeepSkyObjects.jsx     # Hook for handling future nebula/DSO data
- │   └── useStars.jsx              # Core star data loader and mapping logic
- │
- ├── features/
- │   ├── BackgroundMilkyway.jsx    # (Planned) Background sky panorama handler
- │   ├── CinematicIntro.jsx        # Animated intro scene and onboarding
- │   ├── ClickHandler.jsx          # Handles object click/raycast events
- │   ├── ConstellationViewer.jsx   # Draws constellation line connections
- │   ├── DeepSkyField.jsx          # (Planned) Nebula or deep sky field handler
- │   ├── StarField.jsx             # Main GPU-rendered 3D starfield
- │   ├── StarGuide.jsx             # Sidebar UI for browsing/searching stars
- │   └── StarOfTheDay.jsx          # Random daily featured star generator
- │
- ├── ui/
- │   ├── LoadingOverlay.jsx        # Animated loading spinner and intro fade
- │   └── StarInfoCard.jsx          # Displays detailed star info + facts
- │
- ├── App.css                       # Global styles
- ├── App.jsx                       # Entry point linking layout + routes
- ├── constellationLines.json       # Constellation mapping data (HIP IDs)
- ├── ErrorBoundary.jsx             # Fallback component for runtime errors
- ├── index.css                     # Base style resets
- └── main.jsx                      # Application bootstrap
-
+├── analytics/
+│ ├── SpectralLegend.jsx # Colour-temperature legend for spectral types
+│ └── StarAnalytics.jsx # Statistical + visual data analysis module
+├── core/
+│ ├── AppLayout.jsx # Root layout, orchestrates all modules
+│ ├── FlyToStar.jsx # Camera transition system for star focus
+│ ├── StarCanvas.jsx # Three.js canvas wrapper
+│ ├── useDeepSkyObjects.jsx # (Planned) Nebula/deep-sky data hook
+│ └── useStars.jsx # Core star data loader & mapping logic
+├── features/
+│ ├── BackgroundMilkyway.jsx # (Planned) Background Milky Way panorama
+│ ├── CinematicIntro.jsx # Animated intro & onboarding
+│ ├── ClickHandler.jsx # Handles click/raycast events
+│ ├── ConstellationViewer.jsx # Draws constellation line connections
+│ ├── DeepSkyField.jsx # (Planned) Future nebula or DSO handler
+│ ├── StarField.jsx # Main GPU-rendered 3D starfield
+│ ├── StarGuide.jsx # Sidebar UI for browsing/searching stars
+│ └── StarOfTheDay.jsx # Random daily featured star generator
+├── ui/
+│ ├── LoadingOverlay.jsx # Animated loading spinner + intro fade
+│ └── StarInfoCard.jsx # Displays detailed star info + facts
+├── App.css # Global styles
+├── App.jsx # Entry point linking layout + routes
+├── constellationLines.json # Constellation mapping data (HIP IDs)
+├── ErrorBoundary.jsx # Fallback component for runtime errors
+├── index.css # Base style resets
+└── main.jsx # Application bootstrap
+```
 
 ---
 
