@@ -3,8 +3,9 @@ import { useEffect, useState, useCallback, useRef } from "react";
 
 export default function CinematicIntro({ onFinish }) {
   const [show, setShow] = useState(true);
+  const [scale, setScale] = useState(Math.min(window.innerWidth / 1920, 1));
   const audioRef = useRef(null);
-  const hasEnded = useRef(false); // prevent multiple finishes
+  const hasEnded = useRef(false);
 
   const endIntro = useCallback(() => {
     if (hasEnded.current) return;
@@ -18,7 +19,6 @@ export default function CinematicIntro({ onFinish }) {
   }, [onFinish]);
 
   useEffect(() => {
-    // run only once on mount
     const music = new Audio("/interstellar-theme.mp3");
     music.volume = 0.3;
     music.play().catch(() => console.log("Autoplay blocked"));
@@ -26,12 +26,15 @@ export default function CinematicIntro({ onFinish }) {
 
     const timer = setTimeout(() => endIntro(), 6000);
     const handleClick = () => endIntro();
-
     window.addEventListener("click", handleClick);
+
+    const handleResize = () => setScale(Math.min(window.innerWidth / 1920, 1));
+    window.addEventListener("resize", handleResize);
 
     return () => {
       clearTimeout(timer);
       window.removeEventListener("click", handleClick);
+      window.removeEventListener("resize", handleResize);
       music.pause();
     };
   }, [endIntro]);
@@ -49,8 +52,7 @@ export default function CinematicIntro({ onFinish }) {
             left: 0,
             width: "100vw",
             height: "100vh",
-            background:
-              "radial-gradient(circle at center, #000010 0%, #000000 100%)",
+            background: "radial-gradient(circle at center, #000010 0%, #000000 100%)",
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
@@ -59,6 +61,9 @@ export default function CinematicIntro({ onFinish }) {
             fontFamily: "Orbitron, sans-serif",
             zIndex: 9999,
             cursor: "pointer",
+            transform: `scale(${scale})`,
+            transformOrigin: "center center",
+            transition: "transform 0.2s ease-out",
           }}
         >
           <motion.h1

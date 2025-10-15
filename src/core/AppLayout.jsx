@@ -1,25 +1,26 @@
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
 import { AnimatePresence } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import useStars from "./useStars";
-import StarField from "../features/StarField";
-import ConstellationViewer from "../features/ConstellationViewer";
-import StarOfTheDay from "../features/StarOfTheDay";
-import SpectralLegend from "../analytics/SpectralLegend";
-import StarGuide from "../features/StarGuide";
-import FlyToStar from "./FlyToStar";
 import StarCanvas from "./StarCanvas";
+import StarGuide from "../features/StarGuide";
+import StarInfoCard from "../ui/StarInfoCard";
+import SpectralLegend from "../analytics/SpectralLegend";
+import StarOfTheDay from "../features/StarOfTheDay";
 import CinematicIntro from "../features/CinematicIntro";
 import StarAnalytics from "../analytics/StarAnalytics";
-import StarInfoCard from "../ui/StarInfoCard";
 import ErrorBoundary from "../ErrorBoundary";
 
 export default function AppLayout() {
   const { stars, loading, selectedStar, setSelectedStar } = useStars();
   const [theme, setTheme] = useState("night");
+  const [scale, setScale] = useState(Math.min(window.innerWidth / 1920, 1));
   const pointsRef = useRef();
-  const controlsRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => setScale(Math.min(window.innerWidth / 1920, 1));
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <div
@@ -31,21 +32,21 @@ export default function AppLayout() {
             ? "radial-gradient(circle at center, #0a0018 0%, #000000 100%)"
             : "radial-gradient(circle at 50% 20%, #cdeaff 0%, #9ed8ff 40%, #78b4f8 70%, #4a90e2 100%)",
         boxShadow:
-        theme === "day"
-          ? "inset 0 0 200px rgba(255,255,255,0.4), inset 0 0 300px rgba(255,255,255,0.25)"
-          : "none",
+          theme === "day"
+            ? "inset 0 0 200px rgba(255,255,255,0.4), inset 0 0 300px rgba(255,255,255,0.25)"
+            : "none",
         position: "relative",
         transition: "background 1s ease",
         overflow: "hidden",
       }}
     >
-      {/* 🚀 Loading Screen */}
+      {/* 🚀 Loading Overlay */}
       {loading && (
         <div
           style={{
             position: "absolute",
-            top: "0",
-            left: "0",
+            top: 0,
+            left: 0,
             width: "100%",
             height: "100%",
             background: "radial-gradient(circle at center, #050010 0%, #000 100%)",
@@ -53,14 +54,13 @@ export default function AppLayout() {
             flexDirection: "column",
             justifyContent: "center",
             alignItems: "center",
-            overflow: "hidden",
             zIndex: 9999,
           }}
         >
           <div
             style={{
-              width: "120px",
-              height: "120px",
+              width: "8vw",
+              height: "8vw",
               border: "3px solid rgba(157, 77, 255, 0.2)",
               borderTopColor: "#B266FF",
               borderRadius: "50%",
@@ -68,21 +68,19 @@ export default function AppLayout() {
               boxShadow: "0 0 15px #C77DFF88",
             }}
           ></div>
-
           <h2
             style={{
               fontFamily: "Iceland, sans-serif",
               color: "#7F00FF",
               fontWeight: "400",
-              fontSize: "1.5rem",
-              marginTop: "20px",
+              fontSize: "clamp(1rem, 2vw, 1.5rem)",
+              marginTop: "2vh",
               letterSpacing: "1px",
               animation: "fade 2s ease-in-out infinite",
             }}
           >
             Initializing Star Map...
           </h2>
-
           <div
             style={{
               position: "absolute",
@@ -103,65 +101,105 @@ export default function AppLayout() {
         </div>
       )}
 
-      {/* 🌌 3D Canvas */}
+      {/* 🌌 Main Canvas */}
       <ErrorBoundary>
- <StarCanvas
-  stars={stars}
-  selectedStar={selectedStar}
-  setSelectedStar={setSelectedStar}
-  theme={theme}
-  pointsRef={pointsRef}
-/>
-</ErrorBoundary>
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            top: 0,
+            left: 0,
+          }}
+        >
+          <StarCanvas
+            stars={stars}
+            selectedStar={selectedStar}
+            setSelectedStar={setSelectedStar}
+            theme={theme}
+            pointsRef={pointsRef}
+          />
+        </div>
+      </ErrorBoundary>
 
-      {/* ⭐ Star Guide */}
-      <StarGuide stars={stars} onSelect={setSelectedStar} theme={theme} setTheme={setTheme} />
-
-      {/* 🌟 Star Info Card */}
-      <AnimatePresence>
-        {selectedStar && (
-          <StarInfoCard star={selectedStar} onClose={() => setSelectedStar(null)} />
-        )}
-      </AnimatePresence>
-
-      {/* ✨ UI Elements */}
-      <SpectralLegend />
-      <StarOfTheDay />
-      <CinematicIntro />
-
-      {/* 📊 Analytics */}
+      {/* 🧭 UI Modules */}
       <div
         style={{
           position: "absolute",
-          right: "0px",
-          bottom: "10px",
-          zIndex: 1000,
+          width: "100%",
+          height: "100%",
+          transform: `scale(${scale})`,
+          transformOrigin: "center center",
+          transition: "transform 0.2s ease-out",
+          pointerEvents: "none",
         }}
       >
-        <StarAnalytics />
+        <div style={{ pointerEvents: "auto" }}>
+          <StarGuide
+            stars={stars}
+            onSelect={setSelectedStar}
+            theme={theme}
+            setTheme={setTheme}
+          />
+          <SpectralLegend />
+          <StarOfTheDay />
+          <StarAnalytics />
+        </div>
       </div>
+
+      {/* 💫 Star Info Card */}
+      <AnimatePresence>
+        {selectedStar && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: "2vh",
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+              zIndex: 9999,
+            }}
+          >
+            <StarInfoCard
+              star={selectedStar}
+              onClose={() => setSelectedStar(null)}
+            />
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 🎬 Intro Sequence */}
+      <CinematicIntro />
 
       {/* 🪐 Controls Hint */}
       <div
         style={{
-          position: "absolute",
-          bottom: "12px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          fontFamily: "'Iceland', sans-serif",
-          fontSize: "0.85rem",
-          color: "rgba(200,200,255,0.8)",
-          background: "rgba(0,0,30,0.3)",
-          border: "1px solid rgba(150,100,255,0.2)",
-          borderRadius: "10px",
-          padding: "6px 14px",
-          backdropFilter: "blur(8px)",
-          textShadow: "0 0 6px rgba(180,120,255,0.4)",
-          letterSpacing: "0.5px",
+          position: "fixed",
+          bottom: "2vh",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
           zIndex: 500,
         }}
       >
-        💡 Scroll to zoom · Click stars to explore · Drag to rotate
+        <div
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: "bottom center",
+            fontFamily: "'Iceland', sans-serif",
+            fontSize: "clamp(0.6rem, 1vw, 0.85rem)",
+            color: "rgba(200,200,255,0.8)",
+            background: "rgba(0,0,30,0.3)",
+            border: "1px solid rgba(150,100,255,0.2)",
+            borderRadius: "10px",
+            padding: "6px 14px",
+            backdropFilter: "blur(8px)",
+            textShadow: "0 0 6px rgba(180,120,255,0.4)",
+            letterSpacing: "0.5px",
+          }}
+        >
+          💡 Scroll to zoom · Click stars to explore · Drag to rotate
+        </div>
       </div>
     </div>
   );

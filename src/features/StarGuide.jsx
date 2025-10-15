@@ -2,23 +2,26 @@ import React, { useState, useEffect } from "react";
 
 export default function StarGuide({ stars, onSelect, theme, setTheme }) {
   const [query, setQuery] = useState("");
+  const [scale, setScale] = useState(Math.min(window.innerWidth / 1920, 1));
 
-  // 🪐 Load Nova Square font
   useEffect(() => {
     const link = document.createElement("link");
     link.href = "https://fonts.googleapis.com/css2?family=Nova+Square&display=swap";
     link.rel = "stylesheet";
     document.head.appendChild(link);
+
+    const handleResize = () => setScale(Math.min(window.innerWidth / 1920, 1));
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   if (!stars || stars.length === 0) return null;
 
-  // 🔭 Sort by brightness (mag), then constellation, then name
+  // Sort by brightness → constellation → name
   let sorted = [...stars].sort((a, b) => {
     const magA = isNaN(a.mag) ? 99 : a.mag;
     const magB = isNaN(b.mag) ? 99 : b.mag;
-
-    if (magA !== magB) return magA - magB; // ⭐ Brightest (lowest mag) first
+    if (magA !== magB) return magA - magB;
 
     const conA = a.con?.toUpperCase() || "";
     const conB = b.con?.toUpperCase() || "";
@@ -30,7 +33,7 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
     return nameA.localeCompare(nameB);
   });
 
-  // 🔍 Filter search results
+  // Filter
   if (query.trim() !== "") {
     sorted = sorted.filter((s) =>
       (s.name || "").toLowerCase().includes(query.toLowerCase())
@@ -42,15 +45,17 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
   return (
     <div
       style={{
-        position: "absolute",
-        left: "10px",
-        top: "10px",
+        position: "fixed",
+        top: "1.5vh",
+        left: "1.5vw",
+        transform: `scale(${scale})`,
+        transformOrigin: "top left",
         background: "rgba(255, 255, 255, 0.06)",
         border: "1px solid rgba(255, 255, 255, 0.08)",
         borderRadius: "18px",
         padding: "16px",
         width: "195px",
-        maxHeight: "560px",
+        maxHeight: "370px",
         color: "#e5e7eb",
         fontFamily: "'Nova Square', sans-serif",
         fontSize: "0.9rem",
@@ -59,6 +64,8 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
         boxShadow: "0 8px 28px rgba(0,0,0,0.5)",
         backdropFilter: "blur(14px) saturate(150%)",
         WebkitBackdropFilter: "blur(14px) saturate(150%)",
+        zIndex: 9999,
+        transition: "transform 0.2s ease-out",
       }}
     >
       <h3
@@ -102,7 +109,7 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
         </button>
       </h3>
 
-      {/* 🔎 Search Bar */}
+      {/* Search Bar */}
       <input
         type="text"
         value={query}

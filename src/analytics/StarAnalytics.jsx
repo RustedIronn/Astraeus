@@ -17,8 +17,12 @@ export default function StarAnalytics() {
   const [highlight, setHighlight] = useState("");
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
+  const [scale, setScale] = useState(Math.min(window.innerWidth / 1920, 1));
 
   useEffect(() => {
+    const handleResize = () => setScale(Math.min(window.innerWidth / 1920, 1));
+    window.addEventListener("resize", handleResize);
+
     Papa.parse("/hyg_v42.csv", {
       download: true,
       header: true,
@@ -41,10 +45,8 @@ export default function StarAnalytics() {
 
         const valid = (num) => (!isNaN(num) && num !== null ? num : 0);
         const totalStars = data.length;
-
         const avg = (arr) =>
           arr.reduce((a, b) => a + valid(b), 0) / arr.length || 0;
-
         const median = (arr) => {
           const sorted = [...arr].sort((a, b) => a - b);
           const mid = Math.floor(sorted.length / 2);
@@ -56,7 +58,6 @@ export default function StarAnalytics() {
         const magnitudes = data.map((s) => parseFloat(s.mag));
         const distances = data.map((s) => parseFloat(s.dist));
         const lumValues = data.map((s) => parseFloat(s.lum));
-
         const avgMag = avg(magnitudes);
         const avgDist = avg(distances);
         const avgLum = avg(lumValues);
@@ -109,7 +110,6 @@ export default function StarAnalytics() {
             ? spectralArr.reduce((a, b) => (a.count > b.count ? a : b))
             : { type: "?", count: 0 };
 
-        // 🌠 Filter unnamed stars from highlight pool
         const named = {
           nearest:
             nearest.proper && nearest.proper.trim() !== ""
@@ -125,19 +125,8 @@ export default function StarAnalytics() {
               : null,
         };
 
-        // 🪐 Refined highlight set
         const highlights = [
-          `Dominant spectral class: ${dominant.type} — ${
-            {
-              O: "massive blue-white supergiants, rare and short-lived.",
-              B: "energetic blue stars with high radiative output.",
-              A: "white stars like Sirius, luminous and youthful.",
-              F: "yellow-white main sequence stars, hotter than our Sun.",
-              G: "solar-type main sequence stars, steady and stable.",
-              K: "cooler orange dwarfs, long-lived and balanced.",
-              M: "red dwarfs — faint, enduring, and most common in the Milky Way.",
-            }[dominant.type] || "representing a unique stellar population."
-          }`,
+          `Dominant spectral class: ${dominant.type}`,
           `Average apparent magnitude: ${avgMag.toFixed(2)} (median ${medMag.toFixed(
             2
           )})`,
@@ -146,7 +135,7 @@ export default function StarAnalytics() {
                 2
               )} ly`
             : null,
-        ].filter(Boolean); // remove nulls
+        ].filter(Boolean);
 
         setHighlight(highlights[Math.floor(Math.random() * highlights.length)]);
 
@@ -168,11 +157,18 @@ export default function StarAnalytics() {
         setLoading(false);
       },
     });
+
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
     <div
       style={{
+        position: "fixed",
+        bottom: "1.5vh",
+        right: "1.5vw",
+        transform: `scale(${scale})`,
+        transformOrigin: "bottom right",
         background: "rgba(20, 20, 30, 0.07)",
         border: "1px solid rgba(255, 255, 255, 0.05)",
         borderRadius: "16px",
@@ -188,8 +184,9 @@ export default function StarAnalytics() {
         WebkitBackdropFilter: "blur(12px) saturate(140%)",
         textAlign: "center",
         overflow: "hidden",
-        maxHeight: expanded ? "800px" : "330px",
-        transition: "max-height 0.6s ease",
+        maxHeight: expanded ? "600px" : "320px",
+        transition: "max-height 0.6s ease, transform 0.2s ease-out",
+        zIndex: 9999,
       }}
     >
       <h3

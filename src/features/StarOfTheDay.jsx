@@ -7,22 +7,18 @@ function StarOfTheDay() {
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
     const cachedData = localStorage.getItem("spaceNewsData");
-const cachedTime = localStorage.getItem("spaceNewsTime");
+    const cachedDate = localStorage.getItem("spaceNewsDate");
 
-if (cachedData && cachedTime) {
-  const now = Date.now();
-  const diffHours = (now - parseInt(cachedTime, 10)) / (1000 * 60 * 60);
-
-  // Only reuse cache if it's less than 5 hours old
-  if (diffHours < 5) {
-    setData(JSON.parse(cachedData));
-    return;
-  }
-}
+    // 🕒 Use cache if it's from the same day
+    if (cachedData && cachedDate === today) {
+      setData(JSON.parse(cachedData));
+      return;
+    }
 
     const fetchNews = async () => {
       try {
-        const res = await fetch("https://api.spaceflightnewsapi.net/v4/articles/?limit=1");
+        // 🛰 Primary: Your Vercel serverless function (Spaceflight API proxy)
+        const res = await fetch("/api/space-news");
         if (!res.ok) throw new Error(`Spaceflight API error: ${res.status}`);
         const json = await res.json();
 
@@ -39,16 +35,42 @@ if (cachedData && cachedTime) {
 
         setData(formattedData);
         localStorage.setItem("spaceNewsData", JSON.stringify(formattedData));
-        localStorage.setItem("spaceNewsTime", Date.now().toString());
+        localStorage.setItem("spaceNewsDate", today);
       } catch (err) {
-        console.error("Error fetching space news:", err);
-        setData({
-          title: "Space News Unavailable",
-          explanation:
-            "The space news feed is temporarily unreachable. Please check back later!",
-          url: "/fallback.jpg",
-          media_type: "image",
-        });
+        console.error("Error fetching Spaceflight News:", err);
+
+        // 🌌 Fallback: Your ESA serverless function
+        try {
+          const res2 = await fetch("/api/esa");
+          if (!res2.ok) throw new Error(`ESA API error: ${res2.status}`);
+          const json2 = await res2.json();
+          const entry = json2?.items?.[0];
+
+          if (!entry) throw new Error("No ESA image found");
+
+          const formattedData = {
+            title: entry.title,
+            explanation:
+              entry.summary ||
+              "A captivating capture from the European Space Agency archives.",
+            url: entry.image,
+            articleUrl: entry.source_url || "https://www.esa.int",
+            media_type: "image",
+          };
+
+          setData(formattedData);
+          localStorage.setItem("spaceNewsData", JSON.stringify(formattedData));
+          localStorage.setItem("spaceNewsDate", today);
+        } catch (fallbackErr) {
+          console.error("Error fetching ESA image:", fallbackErr);
+          setData({
+            title: "Space News Unavailable",
+            explanation:
+              "All space data sources are temporarily unreachable. Please check back later!",
+            url: "/fallback.jpg",
+            media_type: "image",
+          });
+        }
       }
     };
 
@@ -170,12 +192,6 @@ if (cachedData && cachedTime) {
           e.target.style.color = "violet";
           e.target.style.transform = "scale(1)";
         }}
-        onMouseDown={(e) => {
-          e.target.style.transform = "scale(0.95)";
-        }}
-        onMouseUp={(e) => {
-          e.target.style.transform = "scale(1.05)";
-        }}
       >
         {showMore ? "Show Less" : "Read More"}
       </button>
@@ -210,7 +226,7 @@ if (cachedData && cachedTime) {
             e.target.style.transform = "translateX(0)";
           }}
         >
-           Explore the full article
+          Explore the full article
         </a>
       )}
     </div>

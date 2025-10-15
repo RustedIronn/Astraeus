@@ -1,19 +1,38 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export default function StarInfoCard({ star, onClose }) {
+  const [scale, setScale] = useState(Math.min(window.innerWidth / 1920, 1));
+
+  useEffect(() => {
+    const handleResize = () => setScale(Math.min(window.innerWidth / 1920, 1));
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  if (!star) return null;
+
   return (
     <AnimatePresence>
-      {star && (
-        <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 40, scale: 0.9 }}
-          transition={{ duration: 0.4 }}
+      <motion.div
+        initial={{ opacity: 0, y: 40, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 40, scale: 0.9 }}
+        transition={{ duration: 0.4 }}
+        style={{
+          position: "fixed",
+          bottom: "2vh",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          zIndex: 9999,
+          pointerEvents: "none",
+        }}
+      >
+        <div
           style={{
-            position: "fixed",
-            bottom: "12px",
-            left: "735px",
-            transform: "translateX(-50%)",
+            transform: `scale(${scale})`,
+            transformOrigin: "bottom center",
             background: "rgba(20, 20, 30, 0.12)",
             backdropFilter: "blur(20px) saturate(160%)",
             border: "1px solid rgba(255, 255, 255, 0.1)",
@@ -24,8 +43,8 @@ export default function StarInfoCard({ star, onClose }) {
             maxWidth: "90vw",
             textAlign: "center",
             boxShadow: "0 0 20px rgba(168,85,247,0.4)",
-            zIndex: 9999,
             fontFamily: "'Playwrite US Modern', sans-serif",
+            pointerEvents: "auto",
           }}
         >
           <h2
@@ -78,8 +97,8 @@ export default function StarInfoCard({ star, onClose }) {
           >
             Close
           </button>
-        </motion.div>
-      )}
+        </div>
+      </motion.div>
     </AnimatePresence>
   );
 }

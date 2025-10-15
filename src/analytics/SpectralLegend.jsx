@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 function SpectralLegend() {
   const classes = [
@@ -14,37 +14,47 @@ function SpectralLegend() {
     { type: "Y", color: "#6b21a8" },
   ];
 
-  // 🪶 Load Nova Square font
   useEffect(() => {
     const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Nova+Square&display=swap";
+    link.href =
+      "https://fonts.googleapis.com/css2?family=Nova+Square&display=swap";
     link.rel = "stylesheet";
     document.head.appendChild(link);
+  }, []);
+
+  const [scale, setScale] = useState(Math.min(window.innerWidth / 1920, 1));
+
+  useEffect(() => {
+    const handleResize = () => setScale(Math.min(window.innerWidth / 1920, 1));
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
     <div
       style={{
-        position: "absolute",
-        bottom: "10px",
-        left: "10px",
+        position: "fixed",
+        bottom: "1.5vh",
+        left: "1.5vw",
+        transform: `scale(${scale})`,
+        transformOrigin: "bottom left",
         background: "rgba(255,255,255,0.07)",
         backdropFilter: "blur(12px) saturate(140%)",
         WebkitBackdropFilter: "blur(12px) saturate(140%)",
-        padding: "10px 12px",
+        padding: "12px 14px",
         borderRadius: "10px",
         color: "#e5e7eb",
-        fontSize: "0.8rem",
-        fontFamily: "'Nova Square', sans-serif", // ✅ new font
-        border: "1px solid rgba(255, 255, 255, 0.09)",
+        fontFamily: "'Nova Square', sans-serif",
+        border: "1px solid rgba(255,255,255,0.09)",
         boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
         zIndex: 9999,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        maxHeight: "260px",
         width: "200px",
+        maxHeight: "260px",
         overflowY: "auto",
+        transition: "transform 0.2s ease-out",
       }}
     >
       <strong
@@ -53,7 +63,6 @@ function SpectralLegend() {
           color: "#a78bfa",
           marginBottom: "6px",
           textAlign: "center",
-          fontFamily: "'Nova Square', sans-serif",
           letterSpacing: "0.5px",
         }}
       >
@@ -75,7 +84,6 @@ function SpectralLegend() {
               width: "40%",
               textAlign: "center",
               fontSize: "0.75rem",
-              fontFamily: "'Nova Square', sans-serif",
               letterSpacing: "0.4px",
             }}
           >
