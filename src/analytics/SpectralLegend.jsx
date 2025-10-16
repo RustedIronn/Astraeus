@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
-function SpectralLegend() {
+export default function SpectralLegend() {
   const classes = [
     { type: "O", color: "#6f9eff" },
     { type: "B", color: "#8cb4ff" },
@@ -22,27 +22,17 @@ function SpectralLegend() {
     document.head.appendChild(link);
   }, []);
 
-  const [scale, setScale] = useState(Math.min(window.innerWidth / 1920, 1));
-
-  useEffect(() => {
-    const handleResize = () => setScale(Math.min(window.innerWidth / 1920, 1));
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   return (
     <div
       style={{
         position: "fixed",
-        bottom: "1.5vh",
-        left: "1.5vw",
-        transform: `scale(${scale})`,
-        transformOrigin: "bottom left",
+        bottom: "0.5vh",
+        left: "0.01vw",
         background: "rgba(255,255,255,0.07)",
         backdropFilter: "blur(12px) saturate(140%)",
         WebkitBackdropFilter: "blur(12px) saturate(140%)",
-        padding: "12px 14px",
-        borderRadius: "10px",
+        padding: "14px",
+        borderRadius: "14px",
         color: "#e5e7eb",
         fontFamily: "'Nova Square', sans-serif",
         border: "1px solid rgba(255,255,255,0.09)",
@@ -51,19 +41,22 @@ function SpectralLegend() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        width: "200px",
-        maxHeight: "260px",
+        width: "220px",
+        maxHeight: "270px",
         overflowY: "auto",
-        transition: "transform 0.2s ease-out",
+        scrollbarWidth: "thin",
+        scrollBehavior: "smooth",
+        transition: "all 0.25s ease-out",
       }}
     >
       <strong
         style={{
-          fontSize: "0.9rem",
+          fontSize: "1rem",
           color: "#a78bfa",
-          marginBottom: "6px",
+          marginBottom: "8px",
           textAlign: "center",
           letterSpacing: "0.5px",
+          textShadow: "0 0 6px rgba(167,139,250,0.4)",
         }}
       >
         • Spectral Classes •
@@ -75,6 +68,7 @@ function SpectralLegend() {
           flexWrap: "wrap",
           justifyContent: "center",
           gap: "10px",
+          width: "100%",
         }}
       >
         {classes.map((c) => (
@@ -83,8 +77,9 @@ function SpectralLegend() {
             style={{
               width: "40%",
               textAlign: "center",
-              fontSize: "0.75rem",
+              fontSize: "0.8rem",
               letterSpacing: "0.4px",
+              color: "#e5e7eb",
             }}
           >
             <div
@@ -93,7 +88,7 @@ function SpectralLegend() {
                 height: "16px",
                 borderRadius: "50%",
                 background: c.color,
-                margin: "0 auto 3px",
+                margin: "0 auto 4px",
                 boxShadow: `0 0 6px ${c.color}`,
               }}
             />
@@ -101,8 +96,22 @@ function SpectralLegend() {
           </div>
         ))}
       </div>
+
+      {/* responsive fix for smaller screens */}
+      <style>
+        {`
+          @media (max-width: 600px) {
+            div[style*="position: fixed"] {
+              width: 180px !important;
+              font-size: 0.85rem !important;
+              padding: 10px !important;
+            }
+            strong {
+              font-size: 0.9rem !important;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 }
-
-export default SpectralLegend;

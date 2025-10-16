@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-function StarOfTheDay() {
+export default function StarOfTheDay() {
   const [data, setData] = useState(null);
   const [showMore, setShowMore] = useState(false);
 
@@ -9,7 +9,6 @@ function StarOfTheDay() {
     const cachedData = localStorage.getItem("spaceNewsData");
     const cachedDate = localStorage.getItem("spaceNewsDate");
 
-    // 🕒 Use cache if it's from the same day
     if (cachedData && cachedDate === today) {
       setData(JSON.parse(cachedData));
       return;
@@ -17,13 +16,11 @@ function StarOfTheDay() {
 
     const fetchNews = async () => {
       try {
-        // 🛰 Primary: Your Vercel serverless function (Spaceflight API proxy)
         const res = await fetch("/api/space-news");
-        if (!res.ok) throw new Error(`Spaceflight API error: ${res.status}`);
         const json = await res.json();
-
         const article = json.results?.[0];
-        if (!article) throw new Error("No article found in response");
+
+        if (!article) throw new Error("No valid article returned");
 
         const formattedData = {
           title: article.title,
@@ -37,40 +34,14 @@ function StarOfTheDay() {
         localStorage.setItem("spaceNewsData", JSON.stringify(formattedData));
         localStorage.setItem("spaceNewsDate", today);
       } catch (err) {
-        console.error("Error fetching Spaceflight News:", err);
-
-        // 🌌 Fallback: Your ESA serverless function
-        try {
-          const res2 = await fetch("/api/esa");
-          if (!res2.ok) throw new Error(`ESA API error: ${res2.status}`);
-          const json2 = await res2.json();
-          const entry = json2?.items?.[0];
-
-          if (!entry) throw new Error("No ESA image found");
-
-          const formattedData = {
-            title: entry.title,
-            explanation:
-              entry.summary ||
-              "A captivating capture from the European Space Agency archives.",
-            url: entry.image,
-            articleUrl: entry.source_url || "https://www.esa.int",
-            media_type: "image",
-          };
-
-          setData(formattedData);
-          localStorage.setItem("spaceNewsData", JSON.stringify(formattedData));
-          localStorage.setItem("spaceNewsDate", today);
-        } catch (fallbackErr) {
-          console.error("Error fetching ESA image:", fallbackErr);
-          setData({
-            title: "Space News Unavailable",
-            explanation:
-              "All space data sources are temporarily unreachable. Please check back later!",
-            url: "/fallback.jpg",
-            media_type: "image",
-          });
-        }
+        console.error("Error fetching space news:", err);
+        setData({
+          title: "Space News Unavailable",
+          explanation:
+            "Live space news is temporarily unreachable. Please check back later!",
+          url: "/fallback.jpg",
+          media_type: "image",
+        });
       }
     };
 
@@ -81,51 +52,62 @@ function StarOfTheDay() {
     return (
       <div
         style={{
-          position: "absolute",
-          top: "0px",
-          right: "0px",
+          position: "fixed",
+          top: "1.5vh",
+          right: "0.01vw",
           width: "315px",
           padding: "16px",
           borderRadius: "12px",
           background: "rgba(20,20,30,0.3)",
           color: "white",
           fontFamily: "Iceberg, sans-serif",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          boxShadow: "0 6px 20px rgba(0,0,0,0.4)",
         }}
       >
         <p>Fetching today's space brief...</p>
       </div>
     );
 
-  const text = showMore
-    ? data.explanation
-    : data.explanation.slice(0, 160) + "...";
+  const text =
+    showMore && data.explanation
+      ? data.explanation
+      : (data.explanation || "").slice(0, 160) + "...";
 
   return (
     <div
       style={{
-        position: "absolute",
-        top: "0px",
-        right: "0px",
-        width: "315px",
+        position: "fixed",
+        top: "1.5vh",
+        right: "1.5vw",
+        width: "220px", // fixed slim width like StarGuide
         background: "rgba(20,20,30,0.07)",
-        backdropFilter: "blur(12px) saturate(140%)",
-        WebkitBackdropFilter: "blur(12px) saturate(140%)",
+        backdropFilter: "blur(14px) saturate(140%)",
+        WebkitBackdropFilter: "blur(14px) saturate(140%)",
         padding: "16px",
-        borderRadius: "12px",
+        borderRadius: "18px",
         color: "#e5e7eb",
         fontFamily: "Iceberg, sans-serif",
         maxHeight: "480px",
         overflowY: "auto",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-        border: "1px solid rgba(255, 255, 255, 0.03)",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+        border: "1px solid rgba(255, 255, 255, 0.05)",
+        transition: "all 0.25s ease-out",
+        scrollbarWidth: "thin",
+        scrollBehavior: "smooth",
+        zIndex: 9999,
       }}
     >
       <h3
         style={{
           margin: "0 0 6px 0",
-          fontSize: "18px",
+          fontSize: "1.1rem",
           color: "#a78bfa",
           fontFamily: "'Iceberg', sans-serif",
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
+          paddingBottom: "6px",
+          textShadow: "0 0 6px rgba(167,139,250,0.4)",
         }}
       >
         ⭐ The Space Brief
@@ -133,24 +115,27 @@ function StarOfTheDay() {
 
       <p
         style={{
-          margin: "0 0 10px 0",
+          margin: "8px 0 10px 0",
           fontWeight: "bold",
-          fontSize: "15px",
+          fontSize: "0.95rem",
           fontFamily: "'Iceland', sans-serif",
+          color: "#e0d9ff",
         }}
       >
         {data.title}
       </p>
 
-      {data.media_type === "image" && (
+      {data.media_type === "image" && data.url && (
         <img
           src={data.url}
           alt={data.title}
           style={{
             width: "100%",
-            borderRadius: "8px",
-            marginTop: "8px",
+            borderRadius: "10px",
+            marginTop: "6px",
             boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+            objectFit: "cover",
+            maxHeight: "180px",
           }}
         />
       )}
@@ -158,7 +143,7 @@ function StarOfTheDay() {
       <p
         style={{
           marginTop: "10px",
-          fontSize: "14px",
+          fontSize: "0.85rem",
           lineHeight: "1.4",
           fontFamily: "'Iceland', sans-serif",
         }}
@@ -171,10 +156,9 @@ function StarOfTheDay() {
         style={{
           marginTop: "10px",
           padding: "6px 12px",
-          fontSize: "14px",
+          fontSize: "0.8rem",
           fontFamily: "'Iceberg', sans-serif",
           letterSpacing: "0.8px",
-          fontWeight: "400",
           color: "violet",
           background: "transparent",
           border: "1px solid violet",
@@ -204,9 +188,9 @@ function StarOfTheDay() {
           style={{
             display: "inline-block",
             marginTop: "10px",
-            padding: "8px 16px",
+            padding: "8px 12px",
             fontFamily: "'Iceland', sans-serif",
-            fontSize: "14px",
+            fontSize: "0.8rem",
             letterSpacing: "0.8px",
             color: "#b88cff",
             background: "transparent",
@@ -226,11 +210,25 @@ function StarOfTheDay() {
             e.target.style.transform = "translateX(0)";
           }}
         >
-          Explore the full article
+          Explore the full article →
         </a>
       )}
+
+      {/* Responsive fix for small screens */}
+      <style>
+        {`
+          @media (max-width: 600px) {
+            div[style*="position: fixed"] {
+              width: 180px !important;
+              font-size: 0.8rem !important;
+              padding: 12px !important;
+            }
+            img {
+              max-height: 140px !important;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 }
-
-export default StarOfTheDay;

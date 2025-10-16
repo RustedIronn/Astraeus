@@ -17,12 +17,8 @@ export default function StarAnalytics() {
   const [highlight, setHighlight] = useState("");
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
-  const [scale, setScale] = useState(Math.min(window.innerWidth / 1920, 1));
 
   useEffect(() => {
-    const handleResize = () => setScale(Math.min(window.innerWidth / 1920, 1));
-    window.addEventListener("resize", handleResize);
-
     Papa.parse("/hyg_v42.csv", {
       download: true,
       header: true,
@@ -157,31 +153,27 @@ export default function StarAnalytics() {
         setLoading(false);
       },
     });
-
-    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
     <div
       style={{
         position: "fixed",
-        bottom: "1.5vh",
-        right: "1.5vw",
-        transform: `scale(${scale})`,
-        transformOrigin: "bottom right",
+        bottom: "1vh",
+        right: "0.01vw",
         background: "rgba(20, 20, 30, 0.07)",
         border: "1px solid rgba(255, 255, 255, 0.05)",
-        borderRadius: "16px",
+        borderRadius: "18px",
         padding: "16px",
-        width: "315px",
+        width: "300px",
         color: "#e5e7eb",
-        fontSize: "1.0rem",
+        fontSize: "0.95rem",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-        backdropFilter: "blur(12px) saturate(140%)",
-        WebkitBackdropFilter: "blur(12px) saturate(140%)",
+        backdropFilter: "blur(14px) saturate(140%)",
+        WebkitBackdropFilter: "blur(14px) saturate(140%)",
         textAlign: "center",
         overflow: "hidden",
         maxHeight: expanded ? "600px" : "320px",
@@ -191,7 +183,7 @@ export default function StarAnalytics() {
     >
       <h3
         style={{
-          marginBottom: "0px",
+          marginBottom: "4px",
           color: "#a855f7",
           fontFamily: "'Iceberg', sans-serif",
           letterSpacing: "0.5px",
@@ -316,6 +308,22 @@ export default function StarAnalytics() {
           </p>
         </>
       )}
+
+      {/* Responsive tweak */}
+      <style>
+        {`
+          @media (max-width: 600px) {
+            div[style*="position: fixed"] {
+              width: 260px !important;
+              font-size: 0.85rem !important;
+              padding: 12px !important;
+            }
+            h3 {
+              font-size: 1rem !important;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 }

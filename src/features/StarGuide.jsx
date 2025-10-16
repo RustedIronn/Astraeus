@@ -2,17 +2,12 @@ import React, { useState, useEffect } from "react";
 
 export default function StarGuide({ stars, onSelect, theme, setTheme }) {
   const [query, setQuery] = useState("");
-  const [scale, setScale] = useState(Math.min(window.innerWidth / 1920, 1));
 
   useEffect(() => {
     const link = document.createElement("link");
     link.href = "https://fonts.googleapis.com/css2?family=Nova+Square&display=swap";
     link.rel = "stylesheet";
     document.head.appendChild(link);
-
-    const handleResize = () => setScale(Math.min(window.innerWidth / 1920, 1));
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   if (!stars || stars.length === 0) return null;
@@ -46,15 +41,13 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
     <div
       style={{
         position: "fixed",
-        top: "1.5vh",
-        left: "1.5vw",
-        transform: `scale(${scale})`,
-        transformOrigin: "top left",
+        top: "0.5vh",
+        left: "0.01vw",
         background: "rgba(255, 255, 255, 0.06)",
         border: "1px solid rgba(255, 255, 255, 0.08)",
         borderRadius: "18px",
         padding: "16px",
-        width: "195px",
+        width: "220px", // fixed slim width, won’t expand or compress
         maxHeight: "370px",
         color: "#e5e7eb",
         fontFamily: "'Nova Square', sans-serif",
@@ -65,7 +58,7 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
         backdropFilter: "blur(14px) saturate(150%)",
         WebkitBackdropFilter: "blur(14px) saturate(150%)",
         zIndex: 9999,
-        transition: "transform 0.2s ease-out",
+        transition: "all 0.25s ease-out",
       }}
     >
       <h3
@@ -116,7 +109,7 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search a star..."
         style={{
-          width: "85%",
+          width: "90%",
           padding: "8px 10px",
           marginBottom: "12px",
           borderRadius: "10px",
@@ -135,7 +128,14 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
       />
 
       {/* Scrollable List */}
-      <div style={{ overflowY: "auto", flex: 1, paddingRight: "6px" }}>
+      <div
+        style={{
+          overflowY: "auto",
+          flex: 1,
+          paddingRight: "6px",
+          scrollbarWidth: "thin",
+        }}
+      >
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {sorted.map((star, i) => (
             <li
@@ -174,6 +174,19 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
           ))}
         </ul>
       </div>
+
+      {/* Responsive tweak only for very small screens */}
+      <style>
+        {`
+          @media (max-width: 600px) {
+            div[style] {
+              width: 180px !important;
+              font-size: 0.8rem !important;
+              padding: 12px !important;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 }

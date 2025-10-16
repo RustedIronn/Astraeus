@@ -13,11 +13,12 @@ import ErrorBoundary from "../ErrorBoundary";
 export default function AppLayout() {
   const { stars, loading, selectedStar, setSelectedStar } = useStars();
   const [theme, setTheme] = useState("night");
-  const [scale, setScale] = useState(Math.min(window.innerWidth / 1920, 1));
   const pointsRef = useRef();
 
+  // Handle responsive breakpoints cleanly
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
   useEffect(() => {
-    const handleResize = () => setScale(Math.min(window.innerWidth / 1920, 1));
+    const handleResize = () => setIsMobile(window.innerWidth < 600);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -122,15 +123,12 @@ export default function AppLayout() {
         </div>
       </ErrorBoundary>
 
-      {/* 🧭 UI Modules */}
+      {/* 🧭 UI Modules (fixed, not scaled) */}
       <div
         style={{
           position: "absolute",
           width: "100%",
           height: "100%",
-          transform: `scale(${scale})`,
-          transformOrigin: "center center",
-          transition: "transform 0.2s ease-out",
           pointerEvents: "none",
         }}
       >
@@ -150,21 +148,10 @@ export default function AppLayout() {
       {/* 💫 Star Info Card */}
       <AnimatePresence>
         {selectedStar && (
-          <div
-            style={{
-              position: "fixed",
-              bottom: "2vh",
-              width: "100%",
-              display: "flex",
-              justifyContent: "center",
-              zIndex: 9999,
-            }}
-          >
-            <StarInfoCard
-              star={selectedStar}
-              onClose={() => setSelectedStar(null)}
-            />
-          </div>
+          <StarInfoCard
+            star={selectedStar}
+            onClose={() => setSelectedStar(null)}
+          />
         )}
       </AnimatePresence>
 
@@ -184,18 +171,17 @@ export default function AppLayout() {
       >
         <div
           style={{
-            transform: `scale(${scale})`,
-            transformOrigin: "bottom center",
             fontFamily: "'Iceland', sans-serif",
             fontSize: "clamp(0.6rem, 1vw, 0.85rem)",
             color: "rgba(200,200,255,0.8)",
             background: "rgba(0,0,30,0.3)",
             border: "1px solid rgba(150,100,255,0.2)",
             borderRadius: "10px",
-            padding: "6px 14px",
+            padding: isMobile ? "4px 10px" : "6px 14px",
             backdropFilter: "blur(8px)",
             textShadow: "0 0 6px rgba(180,120,255,0.4)",
             letterSpacing: "0.5px",
+            transition: "all 0.25s ease",
           }}
         >
           💡 Scroll to zoom · Click stars to explore · Drag to rotate

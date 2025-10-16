@@ -3,7 +3,6 @@ import { useEffect, useState, useCallback, useRef } from "react";
 
 export default function CinematicIntro({ onFinish }) {
   const [show, setShow] = useState(true);
-  const [scale, setScale] = useState(Math.min(window.innerWidth / 1920, 1));
   const audioRef = useRef(null);
   const hasEnded = useRef(false);
 
@@ -11,31 +10,42 @@ export default function CinematicIntro({ onFinish }) {
     if (hasEnded.current) return;
     hasEnded.current = true;
     setShow(false);
+
+    // 🌌 Let the music continue softly in background
     if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+      const audio = audioRef.current;
+      audio.loop = true;
+      audio.volume = 0.25; // lower volume after intro
     }
+
     if (typeof onFinish === "function") onFinish();
   }, [onFinish]);
 
   useEffect(() => {
     const music = new Audio("/interstellar-theme.mp3");
-    music.volume = 0.3;
-    music.play().catch(() => console.log("Autoplay blocked"));
+    music.volume = 0.4;
+    music.loop = false; // only loop after intro ends
     audioRef.current = music;
 
+    // Try playing automatically
+    music.play().catch(() => {
+      console.log("Autoplay blocked — waiting for user interaction");
+      const clickPlay = () => {
+        music.play();
+        window.removeEventListener("click", clickPlay);
+      };
+      window.addEventListener("click", clickPlay);
+    });
+
+    // Auto-end intro after 6s
     const timer = setTimeout(() => endIntro(), 6000);
     const handleClick = () => endIntro();
     window.addEventListener("click", handleClick);
 
-    const handleResize = () => setScale(Math.min(window.innerWidth / 1920, 1));
-    window.addEventListener("resize", handleResize);
-
     return () => {
       clearTimeout(timer);
       window.removeEventListener("click", handleClick);
-      window.removeEventListener("resize", handleResize);
-      music.pause();
+      // do not stop music — let it play
     };
   }, [endIntro]);
 
@@ -48,10 +58,7 @@ export default function CinematicIntro({ onFinish }) {
           exit={{ opacity: 0, transition: { duration: 1.2 } }}
           style={{
             position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
+            inset: 0,
             background: "radial-gradient(circle at center, #000010 0%, #000000 100%)",
             display: "flex",
             flexDirection: "column",
@@ -61,9 +68,6 @@ export default function CinematicIntro({ onFinish }) {
             fontFamily: "Orbitron, sans-serif",
             zIndex: 9999,
             cursor: "pointer",
-            transform: `scale(${scale})`,
-            transformOrigin: "center center",
-            transition: "transform 0.2s ease-out",
           }}
         >
           <motion.h1
@@ -71,9 +75,9 @@ export default function CinematicIntro({ onFinish }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 2 }}
             style={{
-              fontSize: "3rem",
-              letterSpacing: "10px",
-              textShadow: "0 0 30px #a855f7",
+              fontSize: "clamp(2rem, 5vw, 4rem)",
+              letterSpacing: "clamp(6px, 1vw, 12px)",
+              textShadow: "0 0 30px #a855f7, 0 0 60px rgba(168,85,247,0.6)",
             }}
           >
             A S T R A E U S
@@ -84,10 +88,11 @@ export default function CinematicIntro({ onFinish }) {
             animate={{ opacity: 1 }}
             transition={{ delay: 2, duration: 2 }}
             style={{
-              fontSize: "1rem",
-              letterSpacing: "3px",
-              color: "#6A0DAD",
-              marginTop: "10px",
+              fontSize: "clamp(0.9rem, 1.2vw, 1.2rem)",
+              letterSpacing: "clamp(2px, 0.5vw, 4px)",
+              color: "#a855f7",
+              marginTop: "1.2vh",
+              textShadow: "0 0 10px rgba(168,85,247,0.6)",
             }}
           >
             Celestial Systems Online ✦
@@ -99,10 +104,10 @@ export default function CinematicIntro({ onFinish }) {
             transition={{ delay: 3.5, duration: 1.5 }}
             style={{
               position: "absolute",
-              bottom: "40px",
-              fontSize: "0.9rem",
+              bottom: "5vh",
+              fontSize: "clamp(0.75rem, 0.9vw, 1rem)",
               color: "#ccc",
-              letterSpacing: "2px",
+              letterSpacing: "clamp(1px, 0.3vw, 3px)",
             }}
           >
             (Click anywhere to skip)

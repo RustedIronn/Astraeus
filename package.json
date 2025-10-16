@@ -13,6 +13,7 @@
     "@react-three/drei": "^10.7.4",
     "@react-three/fiber": "^9.3.0",
     "@react-three/postprocessing": "^3.0.4",
+    "axios": "^1.12.2",
     "ethers": "^6.15.0",
     "framer-motion": "^12.23.24",
     "papaparse": "^5.5.3",
