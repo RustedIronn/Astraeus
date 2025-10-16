@@ -42,7 +42,7 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
       style={{
         position: "fixed",
         top: "0.5vh",
-        left: "0.01vw",
+        left: "0.3vw",
         background: "rgba(255, 255, 255, 0.06)",
         border: "1px solid rgba(255, 255, 255, 0.08)",
         borderRadius: "18px",

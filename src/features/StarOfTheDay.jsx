@@ -36,12 +36,14 @@ export default function StarOfTheDay() {
       } catch (err) {
         console.error("Error fetching space news:", err);
         setData({
-          title: "Space News Unavailable",
-          explanation:
-            "Live space news is temporarily unreachable. Please check back later!",
-          url: "/fallback.jpg",
-          media_type: "image",
-        });
+  title: "Space News Unavailable",
+  explanation:
+    "Live space news is temporarily unreachable. Please check back later! " +
+    "But if you wanna learn about this image — it's the Carina Nebula, captured by the James Webb Space Telescope. " +
+    "This massive stellar nursery is packed with young stars and cosmic dust, sitting about 7,600 light-years away in the constellation Carina.",
+  url: "https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2022/07/STScI-01GA6KKWG229B16K4Q38CH3BXS.png?w=900&h=521&fit=crop&crop=faces%2Cfocalpoint",
+  media_type: "image",
+});
       }
     };
 
@@ -81,7 +83,7 @@ export default function StarOfTheDay() {
         position: "fixed",
         top: "1.5vh",
         right: "1.5vw",
-        width: "220px", // fixed slim width like StarGuide
+        width: "290px", // fixed slim width like StarGuide
         background: "rgba(20,20,30,0.07)",
         backdropFilter: "blur(14px) saturate(140%)",
         WebkitBackdropFilter: "blur(14px) saturate(140%)",

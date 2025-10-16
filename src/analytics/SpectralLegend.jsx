@@ -27,7 +27,7 @@ export default function SpectralLegend() {
       style={{
         position: "fixed",
         bottom: "0.5vh",
-        left: "0.01vw",
+        left: "0.3vw",
         background: "rgba(255,255,255,0.07)",
         backdropFilter: "blur(12px) saturate(140%)",
         WebkitBackdropFilter: "blur(12px) saturate(140%)",
