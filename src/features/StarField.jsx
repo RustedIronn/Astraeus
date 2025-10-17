@@ -2,22 +2,21 @@ import React, { useMemo, useRef, useEffect } from "react";
 import * as THREE from "three";
 import { useFrame, useThree, useLoader } from "@react-three/fiber";
 
-// 🌈 Cached spectral color function
 const colorCache = new Map();
 function spectralToColor(spectral) {
   const type = spectral?.trim()?.[0]?.toUpperCase() ?? "G";
   if (!colorCache.has(type)) {
     const map = {
-      O: "#6faaff", // deep blue
-      B: "#8fc1ff", // soft azure blue
-      A: "#c8e4ff", // crisp white-blue
-      F: "#fff4d6", // creamy pale yellow-white
-      G: "#ffd7a0", // balanced warm yellow
-      K: "#ff9a5e", // soft orange
-      M: "#ff6a5c", // reddish-orange
-      L: "#e85a7b", // muted pink-red
-      T: "#b372ff", // soft violet
-      Y: "#7a3fcf", // deep purple
+      O: "#6faaff",
+      B: "#8fc1ff",
+      A: "#c8e4ff",
+      F: "#fff4d6",
+      G: "#ffd7a0",
+      K: "#ff9a5e",
+      M: "#ff6a5c",
+      L: "#e85a7b",
+      T: "#b372ff",
+      Y: "#7a3fcf",
     };
     colorCache.set(type, new THREE.Color(map[type] || "#ffffff"));
   }
@@ -28,7 +27,6 @@ function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
   const { camera, gl } = useThree();
   const raycasterRef = useRef(new THREE.Raycaster());
 
-  // 🌌 Load star textures once
   const texturePaths = {
     O: "/textures/star_textures/star_O.jpg",
     B: "/textures/star_textures/star_B.jpg",
@@ -54,7 +52,6 @@ function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
     return textures[type] || textures.G;
   };
 
-  // 🌠 Geometry attributes
   const { positions, colors, sizes } = useMemo(() => {
     const pos = new Float32Array(stars.length * 3);
     const col = new Float32Array(stars.length * 3);
@@ -77,7 +74,6 @@ function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
     return { positions: pos, colors: col, sizes: siz };
   }, [stars]);
 
-  // ✨ Twinkle shaders
   const vertexShader = `
     attribute float size;
     varying vec3 vColor;
@@ -96,14 +92,13 @@ function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
     void main() {
       float d = length(gl_PointCoord - vec2(0.5));
       if (d > 0.5) discard;
-      float core = smoothstep(0.4, 0.0, d);
+      float core = smoothstep(0.35, 0.0, d);
       float glow = smoothstep(0.5, 0.2, d);
-      vec3 color = vColor * (core * 1.2 + glow * 0.8);
-      gl_FragColor = vec4(color, 1.0 - d * 0.6);
+      vec3 color = vColor * (core * 1.4 + glow * 0.6);
+      gl_FragColor = vec4(color, 1.0 - d * 0.4);
     }
   `;
 
-  // ⚙️ Stable geometry & material
   const geometry = useMemo(() => {
     const geom = new THREE.BufferGeometry();
     geom.setAttribute("position", new THREE.BufferAttribute(positions, 3));
@@ -127,18 +122,32 @@ function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
   );
 
   const pulseRef = useRef(null);
+  const rippleRef = useRef(null);
   const selectedGroupRef = useRef();
 
-  // 🌌 Animation
   useFrame((state) => {
     material.uniforms.uTime.value = state.clock.elapsedTime;
+    const t = state.clock.elapsedTime;
+
     if (pulseRef.current) {
-      const pulse = 1.1 + Math.sin(state.clock.elapsedTime * 2.0) * 0.2;
-      pulseRef.current.scale.set(pulse, pulse, pulse);
+      const s = 1.1 + Math.sin(t * 2.0) * 0.08;
+      pulseRef.current.scale.set(s, s, s);
+    }
+
+    if (rippleRef.current) {
+      const rippleScale = 1.5 + Math.sin(t * 1.3) * 0.25;
+      rippleRef.current.scale.set(rippleScale, rippleScale, rippleScale);
+      rippleRef.current.material.opacity = 0.25 + Math.sin(t * 1.3) * 0.15;
+    }
+
+    if (selectedGroupRef.current) {
+      const ring = selectedGroupRef.current.children[3];
+      const shimmer = selectedGroupRef.current.getObjectByName("shimmer");
+      if (ring) ring.rotation.z = t * 0.3;
+      if (shimmer) shimmer.rotation.y = t * 0.2;
     }
   });
 
-  // 🌠 Click detection
   useEffect(() => {
     if (!pointsRef.current) return;
     pointsRef.current.raycast = THREE.Points.prototype.raycast;
@@ -162,74 +171,104 @@ function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
     return () => gl.domElement.removeEventListener("click", handleClick);
   }, [stars, camera, gl, pointsRef, onStarClick]);
 
-  // 🚀 Highlight selected star
   useEffect(() => {
     const g = selectedGroupRef.current;
     if (!g) return;
-
-    // hide if no selectedStar
     if (!selectedStar) {
       g.visible = false;
       return;
     }
 
     const color = spectralToColor(selectedStar.spect);
-    const texture = getStarTexture(selectedStar.spect);
-
     g.position.set(selectedStar.x, selectedStar.y, selectedStar.z);
     g.visible = true;
 
     const coreMat = g.children[0].material;
-    coreMat.map = texture;
+    coreMat.color = color.clone().multiplyScalar(1.5);
     coreMat.emissive = color;
-    coreMat.emissiveIntensity = 0.6;
-    coreMat.roughness = 0.4;
-    coreMat.metalness = 0.3;
-    coreMat.clearcoat = 1;
-    coreMat.clearcoatRoughness = 0.2;
+    coreMat.emissiveIntensity = 1.2;
 
-    g.children[1].material.color = color;
-    g.children[2].material.color = color;
+    g.children[1].material.color = color.clone().multiplyScalar(1.05);
+    g.children[2].material.color = color.clone().multiplyScalar(0.8);
+    g.children[3].material.color = color.clone().multiplyScalar(1.3);
   }, [selectedStar]);
 
   return (
     <>
-      {/* ✨ GPU Starfield */}
       <points ref={pointsRef} geometry={geometry} material={material} />
+      <ambientLight intensity={0.4} color="#b2d8ff" />
+      <pointLight position={[0, 0, 0]} intensity={1} color="#ffffff" />
 
-      {/* 🌠 Lighting */}
-      <ambientLight intensity={0.35} color="#b2d8ff" />
-      <pointLight position={[0, 0, 0]} intensity={1.2} color="#ffffff" />
-
-      {/* 🌟 Selected Star Highlight */}
+      {/* 🌟 Refined Highlight — Cinematic Pop */}
       <group ref={selectedGroupRef} visible={false}>
-        {/* Core */}
+        {/* Subtle core */}
         <mesh>
-          <sphereGeometry args={[3, 64, 64]} />
-          <meshPhysicalMaterial />
+          <sphereGeometry args={[2.2, 64, 64]} />
+          <meshStandardMaterial
+            emissiveIntensity={1.2}
+            metalness={0.3}
+            roughness={0.25}
+            toneMapped={false}
+          />
         </mesh>
 
-        {/* Aura Pulse */}
+        {/* Soft inner glow */}
         <mesh ref={pulseRef}>
-          <sphereGeometry args={[6, 32, 32]} />
+          <sphereGeometry args={[3.5, 64, 64]} />
           <meshBasicMaterial
             transparent
-            opacity={0.4}
+            opacity={0.5}
             blending={THREE.AdditiveBlending}
             depthWrite={false}
+            side={THREE.DoubleSide}
           />
         </mesh>
 
-        {/* Ring */}
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[7, 8, 64]} />
+        {/* Gradient halo */}
+        <mesh ref={rippleRef}>
+          <sphereGeometry args={[6.5, 64, 64]} />
           <meshBasicMaterial
-            side={THREE.DoubleSide}
             transparent
-            opacity={0.6}
+            opacity={0.25}
             blending={THREE.AdditiveBlending}
+            depthWrite={false}
+            side={THREE.DoubleSide}
           />
         </mesh>
+
+        {/* Orbiting lines */}
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[7, 7.3, 128]} />
+          <meshBasicMaterial
+            transparent
+            opacity={0.5}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+
+        {/* Parallax shimmer */}
+        <group name="shimmer">
+          {Array.from({ length: 16 }).map((_, i) => (
+            <mesh
+              key={i}
+              position={[
+                Math.cos((i / 16) * Math.PI * 2) * (7.5 + (i % 2) * 0.5),
+                Math.sin((i / 16) * Math.PI * 2) * (7.5 + ((i + 1) % 3) * 0.3),
+                Math.sin((i / 16) * Math.PI * 2) * 0.6,
+              ]}
+            >
+              <sphereGeometry args={[0.15, 8, 8]} />
+              <meshBasicMaterial
+                transparent
+                opacity={0.8}
+                blending={THREE.AdditiveBlending}
+                depthWrite={false}
+              />
+            </mesh>
+          ))}
+        </group>
       </group>
     </>
   );

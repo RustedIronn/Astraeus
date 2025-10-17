@@ -10,6 +10,7 @@ import {
   CartesianGrid,
   LabelList,
 } from "recharts";
+import "../css/StarAnalytics.css";
 
 export default function StarAnalytics() {
   const [stats, setStats] = useState(null);
@@ -156,44 +157,11 @@ export default function StarAnalytics() {
   }, []);
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        bottom: "1vh",
-        right: "1.2vw",
-        background: "rgba(20, 20, 30, 0.07)",
-        border: "1px solid rgba(255, 255, 255, 0.05)",
-        borderRadius: "18px",
-        padding: "16px",
-        width: "290px",
-        color: "#e5e7eb",
-        fontSize: "0.95rem",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-        backdropFilter: "blur(14px) saturate(140%)",
-        WebkitBackdropFilter: "blur(14px) saturate(140%)",
-        textAlign: "center",
-        overflow: "hidden",
-        maxHeight: expanded ? "600px" : "320px",
-        transition: "max-height 0.6s ease, transform 0.2s ease-out",
-        zIndex: 9999,
-      }}
-    >
-      <h3
-        style={{
-          marginBottom: "4px",
-          color: "#a855f7",
-          fontFamily: "'Iceberg', sans-serif",
-          letterSpacing: "0.5px",
-        }}
-      >
-        Star Analytics ✨
-      </h3>
+    <div className={`star-analytics ${expanded ? "expanded" : ""}`}>
+      <h3>Star Analytics ✨</h3>
 
       {loading ? (
-        <p style={{ color: "#9ca3af" }}>Analyzing celestial data...</p>
+        <p className="loading">Analyzing celestial data...</p>
       ) : (
         <>
           <p>
@@ -202,12 +170,11 @@ export default function StarAnalytics() {
           <p>
             Dominant Class: <b>{stats.dominantType}</b>
           </p>
-          <p style={{ color: "#fbbf24" }}>
+          <p className="highlighted">
             Brightest: <b>{stats.brightest}</b> (mag {stats.brightestMag})
           </p>
 
-          {/* 🔭 Spectral Distribution */}
-          <div style={{ width: "100%", height: 140, marginTop: "4px" }}>
+          <div className="chart-container">
             <ResponsiveContainer>
               <BarChart data={spectralData}>
                 <CartesianGrid
@@ -239,28 +206,10 @@ export default function StarAnalytics() {
             </ResponsiveContainer>
           </div>
 
-          {/* ✨ Dynamic Highlight */}
-          <p
-            style={{
-              marginTop: "10px",
-              fontSize: "0.85rem",
-              fontStyle: "italic",
-              color: "#93c5fd",
-              lineHeight: "1.3rem",
-            }}
-          >
-            {highlight}
-          </p>
+          <p className="dynamic-highlight">{highlight}</p>
 
           {expanded && (
-            <div
-              style={{
-                marginTop: "10px",
-                textAlign: "left",
-                width: "100%",
-                overflowY: "auto",
-              }}
-            >
+            <div className="extra-info">
               <p>
                 Mean Distance: <b>{stats.avgDist} ly</b>
               </p>
@@ -280,50 +229,13 @@ export default function StarAnalytics() {
             </div>
           )}
 
-          <button
-            onClick={() => setExpanded(!expanded)}
-            style={{
-              marginTop: "10px",
-              background: "rgba(168, 85, 247, 0.15)",
-              color: "#d8b4fe",
-              border: "1px solid rgba(168, 85, 247, 0.3)",
-              borderRadius: "8px",
-              padding: "5px 10px",
-              cursor: "pointer",
-              fontSize: "0.8rem",
-              transition: "0.3s",
-            }}
-          >
+          <button onClick={() => setExpanded(!expanded)}>
             {expanded ? "Show Less ▲" : "Expand ▼"}
           </button>
 
-          <p
-            style={{
-              marginTop: "6px",
-              fontSize: "0.8rem",
-              color: "#a3e635",
-            }}
-          >
-            HYG Star Catalog (v4.2)
-          </p>
+          <p className="catalog">HYG Star Catalog (v4.2)</p>
         </>
       )}
-
-      {/* Responsive tweak */}
-      <style>
-        {`
-          @media (max-width: 600px) {
-            div[style*="position: fixed"] {
-              width: 260px !important;
-              font-size: 0.85rem !important;
-              padding: 12px !important;
-            }
-            h3 {
-              font-size: 1rem !important;
-            }
-          }
-        `}
-      </style>
     </div>
   );
 }

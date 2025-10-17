@@ -1,0 +1,121 @@
+.space-brief {
+  position: fixed;
+  top: 1.5vh;
+  right: 1.5vw;
+  width: 290px;
+  background: rgba(20, 20, 30, 0.07);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  padding: 16px;
+  border-radius: 18px;
+  color: #e5e7eb;
+  font-family: "Iceberg", sans-serif;
+  max-height: 480px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.25s ease-out;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+  z-index: 9999;
+}
+
+.loading-card {
+  right: 0.01vw;
+  width: 315px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(20, 20, 30, 0.3);
+  color: white;
+  font-family: "Iceberg", sans-serif;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.space-brief h3 {
+  margin: 0 0 6px 0;
+  font-size: 1.1rem;
+  color: #a78bfa;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 6px;
+  text-shadow: 0 0 6px rgba(167, 139, 250, 0.4);
+}
+
+.brief-title {
+  margin: 8px 0 10px 0;
+  font-weight: bold;
+  font-size: 0.95rem;
+  font-family: "Iceland", sans-serif;
+  color: #e0d9ff;
+}
+
+.brief-image {
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  object-fit: cover;
+  max-height: 180px;
+}
+
+.brief-text {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  font-family: "Iceland", sans-serif;
+}
+
+.brief-button {
+  margin-top: 10px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-family: "Iceberg", sans-serif;
+  letter-spacing: 0.8px;
+  color: violet;
+  background: transparent;
+  border: 1px solid violet;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.brief-button:hover {
+  background: violet;
+  color: black;
+  transform: scale(1.05);
+}
+
+.brief-link {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 12px;
+  font-family: "Iceland", sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.8px;
+  color: #b88cff;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.brief-link:hover {
+  color: #ffffff;
+  text-shadow: 0 0 8px #b88cff;
+  transform: translateX(4px);
+}
+
+/* 📱 Responsive */
+@media (max-width: 600px) {
+  .space-brief {
+    width: 180px;
+    font-size: 0.8rem;
+    padding: 12px;
+  }
+
+  .brief-image {
+    max-height: 140px;
+  }
+}

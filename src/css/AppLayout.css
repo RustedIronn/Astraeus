@@ -1,0 +1,135 @@
+/* 🌌 General Layout */
+.app-layout {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  transition: background 1s ease;
+}
+
+/* 🌃 Night Theme */
+.theme-night {
+  background: radial-gradient(circle at center, #070014 0%, #000000 100%);
+  box-shadow: none;
+}
+
+/* 🌅 Dawn Theme */
+.theme-dawn {
+  background: radial-gradient(circle at 40% 30%, #2e0f4c 0%, #513a83 35%, #9e7cff 65%, #ffb36b 100%);
+  box-shadow: inset 0 0 200px rgba(255, 200, 150, 0.15),
+    inset 0 0 350px rgba(255, 150, 100, 0.1);
+}
+
+/* 🚀 Loading Overlay */
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, #050010 0%, #000 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-spinner {
+  width: 8vw;
+  height: 8vw;
+  border: 3px solid rgba(157, 77, 255, 0.2);
+  border-top-color: #b266ff;
+  border-radius: 50%;
+  animation: spin 1.2s linear infinite;
+  box-shadow: 0 0 15px #c77dff88;
+}
+
+.loading-text {
+  font-family: "Iceland", sans-serif;
+  color: #7f00ff;
+  font-weight: 400;
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  margin-top: 2vh;
+  letter-spacing: 1px;
+  animation: fade 2s ease-in-out infinite;
+}
+
+.loading-twinkle {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, transparent 70%);
+  background-size: 400% 400%;
+  animation: twinkle 8s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes fade {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+@keyframes twinkle {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Canvas Container */
+.canvas-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* UI Modules Container */
+.ui-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.ui-wrapper {
+  pointer-events: auto;
+}
+
+/* 🪐 Controls Hint */
+.controls-hint {
+  position: fixed;
+  bottom: 2vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 500;
+}
+
+.hint-box {
+  font-family: "Iceland", sans-serif;
+  font-size: clamp(0.6rem, 1vw, 0.85rem);
+  color: rgba(200, 200, 255, 0.8);
+  background: rgba(0, 0, 30, 0.3);
+  border: 1px solid rgba(150, 100, 255, 0.2);
+  border-radius: 10px;
+  padding: 6px 14px;
+  backdrop-filter: blur(8px);
+  text-shadow: 0 0 6px rgba(180, 120, 255, 0.4);
+  letter-spacing: 0.5px;
+  transition: all 0.25s ease;
+}
+
+.hint-box.mobile {
+  padding: 4px 10px;
+}
+
+/* 📱 Responsive */
+@media (max-width: 600px) {
+  .loading-spinner {
+    width: 80px;
+    height: 80px;
+  }
+
+  .hint-box {
+    font-size: 0.75rem;
+  }
+}
