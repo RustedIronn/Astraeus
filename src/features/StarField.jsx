@@ -226,10 +226,10 @@ function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
 
         {/* Gradient halo */}
         <mesh ref={rippleRef}>
-          <sphereGeometry args={[6.5, 64, 64]} />
+          <sphereGeometry args={[5.5, 64, 64]} />
           <meshBasicMaterial
             transparent
-            opacity={0.25}
+            opacity={0.2}
             blending={THREE.AdditiveBlending}
             depthWrite={false}
             side={THREE.DoubleSide}
@@ -238,7 +238,7 @@ function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
 
         {/* Orbiting lines */}
         <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[7, 7.3, 128]} />
+          <ringGeometry args={[6, 7, 120]} />
           <meshBasicMaterial
             transparent
             opacity={0.5}

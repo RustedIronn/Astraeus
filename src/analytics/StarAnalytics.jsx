@@ -10,7 +10,6 @@ import {
   CartesianGrid,
   LabelList,
 } from "recharts";
-import "../css/StarAnalytics.css";
 
 export default function StarAnalytics() {
   const [stats, setStats] = useState(null);
@@ -157,36 +156,66 @@ export default function StarAnalytics() {
   }, []);
 
   return (
-    <div className={`star-analytics ${expanded ? "expanded" : ""}`}>
-      <h3>Star Analytics ✨</h3>
+    <div
+  className={`
+    fixed bottom-[1vh] right-[1.3vw]
+    bg-[linear-gradient(135deg,rgba(25,30,60,0.2)_0%,rgba(60,20,80,0.25)_100%)]
+    border border-[rgba(130,100,255,0.25)]
+    rounded-2xl p-5 w-[360px] text-gray-200 text-[0.95rem]
+    flex flex-col items-center text-center
+    shadow-[0_0_25px_rgba(90,100,180,0.4)]
+    backdrop-blur-[3px] saturate-[160%]
+    transition-all duration-500 ease-out z-[9999]
+    ${expanded ? "max-h-[680px]" : "max-h-[280px]"}
+    overflow-hidden
+    sm:w-[250px] sm:text-[0.85rem]
+    hover:shadow-[0_0_35px_rgba(130,180,255,0.45)]
+  `}
+>
+  <h3 className="mb-2 font-[Iceberg] tracking-wide text-[1.1rem] sm:text-[1rem] bg-gradient-to-r from-sky-400 via-purple-400 to-cyan-300 text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(130,200,255,0.4)]">
+    Star Analytics ☄️
+  </h3>
 
-      {loading ? (
-        <p className="loading">Analyzing celestial data...</p>
-      ) : (
+  {loading ? (
+    <p className="text-gray-400">Analyzing celestial data...</p>
+  ) : (
+    <>
+      <div className="space-y-1">
+        <p>
+          Catalogued Stars:{" "}
+          <b className="text-indigo-200">{stats.totalStars.toLocaleString()}</b>
+        </p>
+        <p>
+          Dominant Class:{" "}
+          <b className="text-cyan-300">{stats.dominantType}</b>
+        </p>
+        <p className="text-amber-300">
+          Brightest: <b>{stats.brightest}</b> (mag {stats.brightestMag})
+        </p>
+        <p className="mt-2 italic text-[0.85rem] text-[rgba(180,220,255,0.9)] leading-[1.3rem]">
+          {highlight}
+        </p>
+      </div>
+
+      {expanded && (
         <>
-          <p>
-            Catalogued Stars: <b>{stats.totalStars.toLocaleString()}</b>
-          </p>
-          <p>
-            Dominant Class: <b>{stats.dominantType}</b>
-          </p>
-          <p className="highlighted">
-            Brightest: <b>{stats.brightest}</b> (mag {stats.brightestMag})
-          </p>
-
-          <div className="chart-container">
+          <div className="w-full h-[160px] mt-4">
             <ResponsiveContainer>
               <BarChart data={spectralData}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke="rgba(255,255,255,0.1)"
                 />
-                <XAxis dataKey="type" stroke="#a1a1aa" fontSize={11} />
-                <YAxis stroke="#a1a1aa" fontSize={10} allowDecimals={false} />
+                <XAxis dataKey="type" stroke="#cbd5e1" fontSize={11} />
+                <YAxis
+                  stroke="#cbd5e1"
+                  fontSize={10}
+                  allowDecimals={false}
+                />
                 <Tooltip
                   contentStyle={{
-                    background: "rgba(20,20,30,0.9)",
-                    border: "1px solid rgba(168, 85, 247, 0.4)",
+                    background: "rgba(20,25,40,0.9)",
+                    border: "1px solid rgba(130,160,255,0.4)",
                     color: "white",
                   }}
                   formatter={(value, name, entry) => [
@@ -194,11 +223,21 @@ export default function StarAnalytics() {
                     `Type ${entry.payload.type}`,
                   ]}
                 />
-                <Bar dataKey="count" fill="#a855f7" radius={[6, 6, 0, 0]}>
+                <Bar
+                  dataKey="count"
+                  radius={[6, 6, 0, 0]}
+                  fill="url(#barGradient)"
+                >
+                  <defs>
+                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.9} />
+                      <stop offset="95%" stopColor="#a855f7" stopOpacity={0.9} />
+                    </linearGradient>
+                  </defs>
                   <LabelList
                     dataKey="percent"
                     position="top"
-                    fill="#93c5fd"
+                    fill="#c7d2fe"
                     fontSize={10}
                   />
                 </Bar>
@@ -206,36 +245,48 @@ export default function StarAnalytics() {
             </ResponsiveContainer>
           </div>
 
-          <p className="dynamic-highlight">{highlight}</p>
-
-          {expanded && (
-            <div className="extra-info">
-              <p>
-                Mean Distance: <b>{stats.avgDist} ly</b>
-              </p>
-              <p>
-                Median Brightness: <b>{stats.medMag}</b>
-              </p>
-              <p>
-                Average Luminosity: <b>{stats.avgLum}</b>
-              </p>
-              <p>
-                Nearest Named System: <b>{stats.nearest}</b> ({stats.nearestDist} ly)
-              </p>
-              <p>
-                Peak Luminosity Source: <b>{stats.mostLuminous}</b> (
-                {stats.mostLuminousLum})
-              </p>
-            </div>
-          )}
-
-          <button onClick={() => setExpanded(!expanded)}>
-            {expanded ? "Show Less ▲" : "Expand ▼"}
-          </button>
-
-          <p className="catalog">HYG Star Catalog (v4.2)</p>
+          <div className="mt-4 text-left w-full space-y-1">
+            <p>
+              Mean Distance: <b className="text-sky-300">{stats.avgDist} ly</b>
+            </p>
+            <p>
+              Median Brightness:{" "}
+              <b className="text-violet-300">{stats.medMag}</b>
+            </p>
+            <p>
+              Average Luminosity:{" "}
+              <b className="text-cyan-200">{stats.avgLum}</b>
+            </p>
+            <p>
+              Nearest Named System:{" "}
+              <b className="text-indigo-200">{stats.nearest}</b> (
+              {stats.nearestDist} ly)
+            </p>
+            <p>
+              Peak Luminosity Source:{" "}
+              <b className="text-sky-200">{stats.mostLuminous}</b> (
+              {stats.mostLuminousLum})
+            </p>
+          </div>
         </>
       )}
-    </div>
+
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="
+          mt-4 bg-[rgba(120,130,255,0.15)] text-sky-200 border border-[rgba(140,160,255,0.3)]
+          rounded-md px-3 py-1 text-[0.8rem] cursor-pointer transition
+          hover:bg-[rgba(100,150,255,0.25)] hover:text-cyan-200
+        "
+      >
+        {expanded ? "Show Less ▲" : "Expand ▼"}
+      </button>
+
+      <p className="mt-3 text-[0.8rem] text-[rgba(160,220,255,0.9)]">
+        HYG Star Catalog (v4.2)
+      </p>
+    </>
+  )}
+</div>
   );
 }

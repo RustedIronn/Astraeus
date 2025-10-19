@@ -19,30 +19,52 @@ export default function useStars() {
 
   // 🪐 Random fallback fact generator
   const generateFact = (star) => {
-    const spectralType = (star.spect?.trim()?.charAt(0)?.toUpperCase() || "G");
-    const dist = !isNaN(parseFloat(star.dist)) ? parseFloat(star.dist) : Math.floor(Math.random() * 500 + 10);
-    const mag = !isNaN(parseFloat(star.mag)) ? parseFloat(star.mag) : Math.random() * 6;
-    const con = star.con?.trim() || "an unknown constellation";
+  const type = (star.spect?.trim()?.charAt(0)?.toUpperCase() || "G");
+  const dist = !isNaN(parseFloat(star.dist)) ? parseFloat(star.dist) : Math.floor(Math.random() * 800 + 20);
+  const mag = !isNaN(parseFloat(star.mag)) ? parseFloat(star.mag) : 5.5;
+  const con = star.con?.trim() || "an uncharted constellation";
 
-    const types = {
-      O: "a blazing blue star reaching over 30,000 K",
-      B: "a bright blue-white giant",
-      A: "a brilliant white star",
-      F: "a warm yellow-white star",
-      G: "a yellow main-sequence star like our Sun",
-      K: "an orange star cooler than the Sun",
-      M: "a cool red dwarf",
-    };
-    const desc = types[spectralType] || types.G;
-    const endings = [
-      "Its light has traveled for centuries.",
-      "A key part of its constellation.",
-      "Cataloged in the Hipparcos star index.",
-      "Studied for its unique color spectrum.",
-    ];
-
-    return `This is ${desc}, located about ${Math.round(dist)} ly away in ${con}. ${endings[Math.floor(Math.random() * endings.length)]}`;
+  const personalities = {
+    O: "a fierce blue supergiant burning at extreme heat",
+    B: "a luminous blue-white giant",
+    A: "a bright white star with icy brilliance",
+    F: "a yellow-white star of balanced warmth",
+    G: "a steady yellow star like our Sun",
+    K: "an orange star cooler and older than Sol",
+    M: "a quiet red dwarf — small but long-lived",
+    L: "a fading ember of ancient light",
+    T: "a cool brown dwarf, faint and ghostly",
+    Y: "an ultra-cool brown dwarf barely glowing",
   };
+
+  let distanceMood =
+    dist < 20
+      ? "A nearby cosmic neighbor."
+      : dist < 200
+      ? "Its light crosses nearby space."
+      : dist < 1000
+      ? "Light centuries away."
+      : "Ancient light from deep space.";
+
+  let brightnessMood =
+    mag < 1.5
+      ? "Among the brightest in its sky."
+      : mag < 3.5
+      ? "Easily visible on clear nights."
+      : "Barely visible without aid.";
+
+  const endings = [
+    "Often studied for its stellar makeup.",
+    "Possibly surrounded by exoplanets.",
+    "Used as a calibration star in astronomy.",
+    "A core part of its constellation.",
+    "Observed regularly for spectral shifts.",
+  ];
+
+  const ending = endings[Math.floor(Math.random() * endings.length)];
+
+  return `A ${personalities[type] || "mysterious star"}, about ${Math.round(dist)} ly away in ${con}. ${brightnessMood} ${distanceMood} ${ending}`;
+};
 
   const clean = (val) =>
     val === undefined || val === null || val === "" ? null : String(val).trim();

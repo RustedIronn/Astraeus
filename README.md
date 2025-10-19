@@ -114,6 +114,23 @@ CSV parsing handled via [`papaparse`](https://www.papaparse.com/).
 
 ---
 
+## 🎨 Styling & Configuration
+
+Astraeus uses **TailwindCSS** for responsive layout, utility-first styling, and adaptive scaling across resolutions.  
+Custom animations, scrollbars, and gradients are handled through Tailwind’s extended configuration.
+
+### 🧩 Tailwind Setup
+
+```bash
+# Install TailwindCSS
+npm install -D tailwindcss postcss autoprefixer
+
+# Initialize config files
+npx tailwindcss init -p
+```
+
+---
+
 ## 🚀 Installation & Setup
 
 ```bash
@@ -129,3 +146,27 @@ npm run dev
 
 # Build for production
 npm run build
+```
+
+---
+
+## 🪞 Credits
+
+Astraeus uses verified astronomical data and open frameworks:
+
+Data & Science
+
+- [HYG Star Database v4.2](https://github.com/astronexus/HYG-Database) — compiled by **David Nash**  
+- [NASA / ESA](https://www.nasa.gov/) — imagery and temperature color calibration  
+- [Harvard–Smithsonian Center for Astrophysics (CfA)](https://www.cfa.harvard.edu/) — spectral classification & luminosity data
+
+Frameworks & Libraries
+
+- [Three.js](https://threejs.org/)
+- [React Three Fiber](https://github.com/pmndrs/react-three-fiber)
+- [Framer Motion](https://www.framer.com/motion/)
+- [Recharts](https://recharts.org/)
+- [TailwindCSS](https://tailwindcss.com/)
+
+Built and maintained by me
+GitHub: @RustedIronn

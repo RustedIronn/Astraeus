@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useCallback, useRef } from "react";
-import "../css/CinematicIntro.css";
 
 export default function CinematicIntro({ onFinish }) {
   const [show, setShow] = useState(true);
@@ -15,7 +14,7 @@ export default function CinematicIntro({ onFinish }) {
     if (audioRef.current) {
       const audio = audioRef.current;
       audio.loop = true;
-      audio.volume = 0.25; // soft background continuation
+      audio.volume = 0.25;
     }
 
     if (typeof onFinish === "function") onFinish();
@@ -28,7 +27,6 @@ export default function CinematicIntro({ onFinish }) {
     audioRef.current = music;
 
     music.play().catch(() => {
-      console.log("Autoplay blocked — waiting for user interaction");
       const clickPlay = () => {
         music.play();
         window.removeEventListener("click", clickPlay);
@@ -36,7 +34,8 @@ export default function CinematicIntro({ onFinish }) {
       window.addEventListener("click", clickPlay);
     });
 
-    const timer = setTimeout(() => endIntro(), 6000);
+    // ⏱ shorten total intro runtime (3.2s + 0.8s fade = ~4s total)
+    const timer = setTimeout(() => endIntro(), 3500);
     const handleClick = () => endIntro();
     window.addEventListener("click", handleClick);
 
@@ -50,34 +49,61 @@ export default function CinematicIntro({ onFinish }) {
     <AnimatePresence>
       {show && (
         <motion.div
-          className="cinematic-intro"
+          className="
+            fixed inset-0 flex flex-col items-center justify-center
+            bg-[radial-gradient(circle_at_center,#000010_0%,#000000_100%)]
+            text-white font-[Orbitron] cursor-pointer z-[9999]
+            overflow-hidden
+          "
           initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 1.2 } }}
+          exit={{ opacity: 0, transition: { duration: 0.8 } }}
         >
+          {/* 🌌 Title */}
           <motion.h1
-            className="intro-title"
+            className="
+              text-[clamp(2rem,5vw,4rem)]
+              tracking-[clamp(6px,1vw,12px)]
+              text-center
+              text-transparent bg-clip-text
+              bg-gradient-to-b from-white to-[#a855f7]/70
+              drop-shadow-[0_0_20px_rgba(168,85,247,0.3)]
+            "
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 2 }}
+            transition={{ duration: 1.4 }}
           >
             A S T R A E U S
           </motion.h1>
 
+          {/* ✨ Subtitle */}
           <motion.p
-            className="intro-subtitle"
+            className="
+              mt-[1.2vh]
+              text-[clamp(0.9rem,1.2vw,1.2rem)]
+              tracking-[clamp(2px,0.5vw,4px)]
+              text-[#a855f7]
+              text-center
+              drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]
+            "
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 2, duration: 2 }}
+            transition={{ delay: 1.4, duration: 1.2 }}
           >
             Celestial Systems Online ✦
           </motion.p>
 
+          {/* 🖱 Skip Hint */}
           <motion.p
-            className="intro-skip"
+            className="
+              absolute bottom-[5vh]
+              text-[clamp(0.75rem,0.9vw,1rem)]
+              tracking-[clamp(1px,0.3vw,3px)]
+              text-gray-400 opacity-60
+            "
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.6 }}
-            transition={{ delay: 3.5, duration: 1.5 }}
+            transition={{ delay: 2.4, duration: 0.8 }}
           >
             (Click anywhere to skip)
           </motion.p>
