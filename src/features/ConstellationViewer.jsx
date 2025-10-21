@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { useMemo, useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import constellationLines from "../constellationlines.json";
+import constellationLines from "../constellationLines.json";
 
 export default function ConstellationViewer({ stars = [], selectedStar }) {
   const groupRef = useRef();
