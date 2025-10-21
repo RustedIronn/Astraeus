@@ -1,37 +1,61 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
-export default function StarGuide({ stars, onSelect, theme, setTheme }) {
+export default function StarGuide({ stars, onSelect, theme, setTheme, selectedStar }) {
   const [query, setQuery] = useState("");
+  const [sortMode, setSortMode] = useState("brightness");
 
   useEffect(() => {
     const link = document.createElement("link");
-    link.href =
-      "https://fonts.googleapis.com/css2?family=Nova+Square&display=swap";
+    link.href = "https://fonts.googleapis.com/css2?family=Nova+Square&display=swap";
     link.rel = "stylesheet";
     document.head.appendChild(link);
   }, []);
 
   if (!stars || stars.length === 0) return null;
 
-  // Sort and filter logic
-  let sorted = [...stars].sort((a, b) => {
-    const magA = isNaN(a.mag) ? 99 : a.mag;
-    const magB = isNaN(b.mag) ? 99 : b.mag;
-    if (magA !== magB) return magA - magB;
-    const conA = a.con?.toUpperCase() || "";
-    const conB = b.con?.toUpperCase() || "";
-    if (conA < conB) return -1;
-    if (conA > conB) return 1;
-    return (a.name || "").localeCompare(b.name || "");
-  });
+  // ⚙️ Sorting logic
+  const sorted = useMemo(() => {
+    let sortedStars = [...stars];
 
-  if (query.trim() !== "") {
-    sorted = sorted.filter((s) =>
-      (s.name || "").toLowerCase().includes(query.toLowerCase())
-    );
-  } else {
-    sorted = sorted.slice(0, 1000);
-  }
+    switch (sortMode) {
+      case "distance":
+        sortedStars.sort((a, b) => (a.dist ?? Infinity) - (b.dist ?? Infinity));
+        break;
+      case "alphabet":
+        sortedStars.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        break;
+      case "constellation":
+        sortedStars.sort((a, b) => (a.con || "").localeCompare(b.con || ""));
+        break;
+      case "spectral":
+        sortedStars.sort((a, b) => (a.spect || "").localeCompare(b.spect || ""));
+        break;
+      default:
+        sortedStars.sort((a, b) => (a.mag ?? 99) - (b.mag ?? 99));
+        break;
+    }
+
+    // 🧠 Highlight current constellation stars
+    if (selectedStar?.con) {
+      const con = selectedStar.con.toUpperCase();
+      sortedStars.sort((a, b) => {
+        if (a.con === con && b.con !== con) return -1;
+        if (b.con === con && a.con !== con) return 1;
+        return 0;
+      });
+    }
+
+    // 🔍 Search filtering
+    if (query.trim() !== "") {
+      sortedStars = sortedStars.filter((s) =>
+        (s.name || "").toLowerCase().includes(query.toLowerCase())
+      );
+    } else {
+      sortedStars = sortedStars.slice(0, 1000);
+    }
+
+    return sortedStars;
+  }, [stars, sortMode, query, selectedStar]);
 
   return (
     <div
@@ -62,12 +86,7 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
       "
     >
       {/* Header */}
-      <div
-        className="
-          flex items-center justify-between
-          border-b border-white/10 pb-2
-        "
-      >
+      <div className="flex items-center justify-between border-b border-white/10 pb-2">
         <h3
           className="
             text-[1.1rem]
@@ -79,7 +98,7 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
           STAR GUIDE
         </h3>
         <button
-          onClick={() => setTheme(theme === 'night' ? 'dawn' : 'night')}
+          onClick={() => setTheme(theme === "night" ? "dawn" : "night")}
           className="
             bg-indigo-700/20 border border-indigo-400/20 rounded-md
             px-2 py-[2px] text-[0.75rem] text-sky-100
@@ -90,20 +109,40 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
         </button>
       </div>
 
-      {/* Search Bar */}
-      <div className="flex justify-center">
+      {/* Search + Sort */}
+      <div className="flex justify-between items-center">
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search a star..."
           className="
-            w-[95%] px-3 py-2 rounded-lg border border-indigo-400/20
-            bg-white/5 text-white text-[0.85rem] outline-none
+            w-[70%] px-3 py-2 rounded-lg border border-indigo-400/20
+            bg-white/5 text-white text-[0.8rem] outline-none
             placeholder:text-gray-400
             focus:border-sky-400 focus:bg-white/10 transition
           "
         />
+        <select
+          value={sortMode}
+          onChange={(e) => setSortMode(e.target.value)}
+          className="
+            w-[27%] px-1 py-[9.2px] text-[0.75rem] rounded-md
+            border border-purple-500/40 text-purple-100
+          bg-[#120a2b]/90
+          hover:bg-[#1a0f3d]/90 hover:border-purple-400/60
+          focus:bg-[#1f114a]/90 focus:border-purple-300/70
+            focus:shadow-[0_0_10px_rgba(180,130,255,0.35)]
+          active:bg-[#261458]/90
+            transition-all duration-200
+          "
+        >
+          <option value="brightness">Brightness</option>
+          <option value="distance">Distance</option>
+          <option value="alphabet">Alphabet</option>
+          <option value="constellation">Constellation</option>
+          <option value="spectral">Spectral</option>
+        </select>
       </div>
 
       {/* Scrollable List */}
@@ -125,13 +164,15 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
             <li
               key={i}
               onClick={() => onSelect(star)}
-              className="
-                cursor-pointer px-3 py-2 mb-1 rounded-md
-                transition-all duration-200 ease-out
-                hover:bg-[rgba(180,130,255,0.15)]
-                hover:shadow-[0_0_10px_rgba(120,150,255,0.25)]
+              className={`
+                cursor-pointer px-3 py-2 mb-1 rounded-md transition-all duration-200 ease-out
+                ${
+                  selectedStar?.con?.toUpperCase() === star.con
+                    ? "bg-[rgba(150,100,255,0.25)] shadow-[0_0_10px_rgba(120,150,255,0.35)]"
+                    : "hover:bg-[rgba(180,130,255,0.15)] hover:shadow-[0_0_10px_rgba(120,150,255,0.25)]"
+                }
                 active:scale-[0.98]
-              "
+              `}
             >
               <span className="font-semibold text-sky-200">{star.name}</span>{" "}
               <span className="opacity-60 text-[0.8rem] tracking-wide text-sky-100/80">
@@ -142,7 +183,7 @@ export default function StarGuide({ stars, onSelect, theme, setTheme }) {
         </ul>
       </div>
 
-      {/* Aurora Keyframes */}
+      {/* Aurora animation */}
       <style>{`
         @keyframes auroraFloat {
           0% { background-position: 0% 50%; }

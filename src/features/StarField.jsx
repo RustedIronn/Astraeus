@@ -7,16 +7,16 @@ function spectralToColor(spectral) {
   const type = spectral?.trim()?.[0]?.toUpperCase() ?? "G";
   if (!colorCache.has(type)) {
     const map = {
-      O: "#6faaff",
-      B: "#8fc1ff",
-      A: "#c8e4ff",
-      F: "#fff4d6",
-      G: "#ffd7a0",
-      K: "#ff9a5e",
-      M: "#ff6a5c",
-      L: "#e85a7b",
-      T: "#b372ff",
-      Y: "#7a3fcf",
+      O: "#6BB6FF", // bright blue
+      B: "#7EC7FF", // light blue
+      A: "#AECFFF", // bluish white
+      F: "#FFF6C2", // warm white
+      G: "#FFD966", // golden yellow
+      K: "#FF9E40", // orange
+      M: "#FF5540", // deep red-orange
+      L: "#D24D8A", // pinkish magenta
+      T: "#A25AFF", // violet
+      Y: "#713BFF", // deep indigo
     };
     colorCache.set(type, new THREE.Color(map[type] || "#ffffff"));
   }
