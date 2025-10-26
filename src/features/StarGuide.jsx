@@ -3,6 +3,15 @@ import React, { useState, useEffect, useMemo } from "react";
 export default function StarGuide({ stars, onSelect, theme, setTheme, selectedStar }) {
   const [query, setQuery] = useState("");
   const [sortMode, setSortMode] = useState("brightness");
+  const [openMenu, setOpenMenu] = useState(false);
+
+  const sortOptions = [
+    { key: "brightness", label: "Luminosity Index", gradient: "from-yellow-200 via-amber-300 to-orange-300" },
+    { key: "distance", label: "Light-year Distance", gradient: "from-emerald-300 via-teal-300 to-cyan-400" },
+    { key: "alphabet", label: "Designation Order", gradient: "from-pink-300 via-purple-300 to-fuchsia-400" },
+    { key: "constellation", label:"Constellation Grouping", gradient: "from-violet-300 via-purple-400 to-indigo-400" },
+    { key: "spectral", label: "Spectral Type", gradient: "from-teal-300 via-violet-400 to-purple-300" },
+  ];
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -13,10 +22,8 @@ export default function StarGuide({ stars, onSelect, theme, setTheme, selectedSt
 
   if (!stars || stars.length === 0) return null;
 
-  // ⚙️ Sorting logic
   const sorted = useMemo(() => {
     let sortedStars = [...stars];
-
     switch (sortMode) {
       case "distance":
         sortedStars.sort((a, b) => (a.dist ?? Infinity) - (b.dist ?? Infinity));
@@ -35,7 +42,6 @@ export default function StarGuide({ stars, onSelect, theme, setTheme, selectedSt
         break;
     }
 
-    // 🧠 Highlight current constellation stars
     if (selectedStar?.con) {
       const con = selectedStar.con.toUpperCase();
       sortedStars.sort((a, b) => {
@@ -45,7 +51,6 @@ export default function StarGuide({ stars, onSelect, theme, setTheme, selectedSt
       });
     }
 
-    // 🔍 Search filtering
     if (query.trim() !== "") {
       sortedStars = sortedStars.filter((s) =>
         (s.name || "").toLowerCase().includes(query.toLowerCase())
@@ -57,31 +62,42 @@ export default function StarGuide({ stars, onSelect, theme, setTheme, selectedSt
     return sortedStars;
   }, [stars, sortMode, query, selectedStar]);
 
+  // 🌌 Main glass panel gradient (translucent)
+  const auroraGradient = `linear-gradient(
+    130deg,
+    rgba(0, 255, 210, 0.18),
+    rgba(0, 200, 180, 0.18),
+    rgba(110, 0, 255, 0.18),
+    rgba(150, 0, 255, 0.18)
+  )`;
+
+  // 💎 Static, opaque dropdown gradient using your exact colors
+  const staticAurora = `linear-gradient(
+    135deg,
+    #00483f 0%,
+    #231354 100%
+  )`;
+
   return (
     <div
       style={{
-        backgroundImage: `linear-gradient(
-          120deg,
-          rgba(70, 40, 120, 0.12),
-          rgba(60, 90, 180, 0.1),
-          rgba(80, 30, 160, 0.15),
-          rgba(120, 80, 220, 0.12)
-        )`,
-        backgroundSize: "300% 300%",
-        animation: "auroraFloat 20s ease-in-out infinite",
+        backgroundImage: auroraGradient,
+        backgroundSize: "400% 400%",
+        animation: "auroraFloat 18s ease-in-out infinite",
+        backdropFilter: "blur(3px) saturate(160%)",
+        backgroundColor: "rgba(20, 20, 30, 0.3)",
       }}
       className="
         fixed top-[1vh] left-[0.8vw]
-        flex flex-col
+        flex flex-col 
         w-[clamp(250px,22vw,260px)] 
         h-[clamp(300px,40vh,350px)]
-        backdrop-blur-[4px] saturate-[180%]
-        border border-[rgba(140,100,255,0.2)] rounded-2xl
-        shadow-[0_0_15px_rgba(160,80,255,0.2)]
+        border border-[rgba(140,100,255,0.3)] rounded-2xl
+        shadow-[0_0_35px_rgba(0,255,255,0.25)]
         text-gray-100 font-[Nova_Square] text-[clamp(0.8rem,0.9vw,1rem)]
         p-[1rem] space-y-3 overflow-hidden
         transition-all duration-500 ease-out
-        hover:shadow-[0_0_25px_rgba(160,130,255,0.4)]
+        hover:shadow-[0_0_45px_rgba(150,0,255,0.4)]
         z-[9999]
       "
     >
@@ -90,9 +106,8 @@ export default function StarGuide({ stars, onSelect, theme, setTheme, selectedSt
         <h3
           className="
             text-[1.1rem]
-            bg-gradient-to-r from-sky-200 via-indigo-300 to-purple-200
+            bg-gradient-to-r from-teal-200 via-cyan-300 to-violet-300
             bg-clip-text text-transparent tracking-wide
-            drop-shadow-[0_0_4px_rgba(140,160,255,0.3)]
           "
         >
           STAR GUIDE
@@ -100,16 +115,16 @@ export default function StarGuide({ stars, onSelect, theme, setTheme, selectedSt
         <button
           onClick={() => setTheme(theme === "night" ? "dawn" : "night")}
           className="
-            bg-indigo-700/20 border border-indigo-400/20 rounded-md
-            px-2 py-[2px] text-[0.75rem] text-sky-100
-            hover:bg-indigo-500/25 transition
+            bg-violet-800/30 border border-teal-400/30 rounded-md
+            px-2 py-[2px] text-[0.75rem] text-cyan-100
+            hover:bg-violet-700/40 transition
           "
         >
           {theme === "night" ? "🌑" : "🌕"}
         </button>
       </div>
 
-      {/* Search + Sort */}
+      {/* Search */}
       <div className="flex justify-between items-center">
         <input
           type="text"
@@ -117,46 +132,87 @@ export default function StarGuide({ stars, onSelect, theme, setTheme, selectedSt
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search a star..."
           className="
-            w-[70%] px-3 py-2 rounded-lg border border-indigo-400/20
+            w-full px-3 py-2 rounded-lg border border-teal-300/40
             bg-white/5 text-white text-[0.8rem] outline-none
-            placeholder:text-gray-400
-            focus:border-sky-400 focus:bg-white/10 transition
+            placeholder:text-gray-300
+            focus:border-violet-400 focus:bg-white/10 transition
           "
         />
-        <select
-          value={sortMode}
-          onChange={(e) => setSortMode(e.target.value)}
-          className="
-            w-[27%] px-1 py-[9.2px] text-[0.75rem] rounded-md
-            border border-purple-500/40 text-purple-100
-          bg-[#120a2b]/90
-          hover:bg-[#1a0f3d]/90 hover:border-purple-400/60
-          focus:bg-[#1f114a]/90 focus:border-purple-300/70
-            focus:shadow-[0_0_10px_rgba(180,130,255,0.35)]
-          active:bg-[#261458]/90
-            transition-all duration-200
-          "
-        >
-          <option value="brightness">Brightness</option>
-          <option value="distance">Distance</option>
-          <option value="alphabet">Alphabet</option>
-          <option value="constellation">Constellation</option>
-          <option value="spectral">Spectral</option>
-        </select>
       </div>
 
-      {/* Scrollable List */}
+      {/* Sort Dropdown */}
+      <div className="relative mt-3">
+        <button
+          style={{
+            backgroundImage: auroraGradient,
+            backgroundSize: "400% 400%",
+            animation: "auroraFloat 18s ease-in-out infinite",
+          }}
+          onClick={() => setOpenMenu(!openMenu)}
+          className="
+            w-full px-3 py-[10px]
+            text-[0.8rem] rounded-lg
+            text-white font-[Nova_Square]
+            border border-[rgba(0,255,255,0.25)]
+            shadow-[0_0_10px_rgba(0,255,255,0.25)]
+            hover:shadow-[0_0_15px_rgba(150,0,255,0.4)]
+            hover:scale-[1.02]
+            transition-all duration-300 ease-out
+            flex justify-between items-center cursor-pointer
+          "
+        >
+          {sortOptions.find((opt) => opt.key === sortMode)?.label}
+          <span className="text-[0.7rem] opacity-80">▼</span>
+        </button>
+
+        {openMenu && (
+          <ul
+            style={{
+              backgroundImage: staticAurora,
+              backgroundSize: "100% 100%",
+              boxShadow: "inset 0 0 8px rgba(255,255,255,0.05), 0 0 20px rgba(0,255,255,0.25)",
+            }}
+            className="
+              absolute top-[105%] left-0 right-0
+              border border-[rgba(0,255,255,0.3)]
+              rounded-lg overflow-hidden
+              animate-fadeIn z-50
+            "
+          >
+            {sortOptions.map((opt) => (
+              <li
+                key={opt.key}
+                onClick={() => {
+                  setSortMode(opt.key);
+                  setOpenMenu(false);
+                }}
+                className={`px-3 py-2 text-[0.8rem] cursor-pointer transition-all duration-200 ease-out
+                  ${
+                    sortMode === opt.key
+                      ? "bg-[rgba(0,255,255,0.25)] text-cyan-100"
+                      : "hover:bg-[rgba(150,0,255,0.25)] text-gray-100"
+                  }`}
+              >
+                <span
+                  className={`bg-gradient-to-r ${opt.gradient} bg-clip-text text-transparent font-semibold tracking-wide`}
+                >
+                  {opt.label}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Scrollable list */}
       <div
         className="
-          flex-1 overflow-y-auto pr-[6px]
-          scrollbar-thin scrollbar-thumb-[rgba(130,160,255,0.35)]
-          scrollbar-track-[rgba(255,255,255,0.03)]
-          hover:scrollbar-thumb-[rgba(150,190,255,0.55)]
+          flex-1 overflow-y-auto pr-[6px] scroll-smooth
+          scrollbar-thin scrollbar-thumb-[rgba(0,255,255,0.35)]
+          scrollbar-track-[rgba(255,255,255,0.05)]
+          hover:scrollbar-thumb-[rgba(130,160,255,0.55)]
           [&::-webkit-scrollbar]:w-[8px]
           [&::-webkit-scrollbar-thumb]:rounded-full
-          [&::-webkit-scrollbar-thumb]:bg-[rgba(130,160,255,0.35)]
-          [&::-webkit-scrollbar-thumb:hover]:bg-[rgba(150,190,255,0.55)]
-          [&::-webkit-scrollbar-track]:bg-[rgba(255,255,255,0.03)]
         "
       >
         <ul className="list-none m-0 p-0">
@@ -164,18 +220,19 @@ export default function StarGuide({ stars, onSelect, theme, setTheme, selectedSt
             <li
               key={i}
               onClick={() => onSelect(star)}
-              className={`
-                cursor-pointer px-3 py-2 mb-1 rounded-md transition-all duration-200 ease-out
+              className={`cursor-pointer px-3 py-2 mb-1 rounded-md transition-all duration-200 ease-out
                 ${
-                  selectedStar?.con?.toUpperCase() === star.con
-                    ? "bg-[rgba(150,100,255,0.25)] shadow-[0_0_10px_rgba(120,150,255,0.35)]"
-                    : "hover:bg-[rgba(180,130,255,0.15)] hover:shadow-[0_0_10px_rgba(120,150,255,0.25)]"
+                  selectedStar?.hip === star.hip
+                    ? "bg-[rgba(0,255,255,0.4)] shadow-[0_0_15px_rgba(0,255,255,0.45)]"
+                    : selectedStar?.con?.toUpperCase() === star.con
+                    ? "bg-[rgba(120,0,255,0.4)] shadow-[0_0_10px_rgba(160,130,255,0.35)]"
+                    : "hover:bg-[rgba(0,200,255,0.3)] hover:shadow-[0_0_10px_rgba(0,255,255,0.35)]"
                 }
                 active:scale-[0.98]
               `}
             >
-              <span className="font-semibold text-sky-200">{star.name}</span>{" "}
-              <span className="opacity-60 text-[0.8rem] tracking-wide text-sky-100/80">
+              <span className="font-semibold text-white">{star.name}</span>{" "}
+              <span className="opacity-70 text-[0.8rem] tracking-wide text-gray-200">
                 ({star.con})
               </span>
             </li>
@@ -183,12 +240,20 @@ export default function StarGuide({ stars, onSelect, theme, setTheme, selectedSt
         </ul>
       </div>
 
-      {/* Aurora animation */}
       <style>{`
         @keyframes auroraFloat {
           0% { background-position: 0% 50%; }
+          25% { background-position: 50% 60%; }
           50% { background-position: 100% 50%; }
+          75% { background-position: 50% 40%; }
           100% { background-position: 0% 50%; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.25s ease-out forwards;
         }
       `}</style>
     </div>

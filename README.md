@@ -74,7 +74,7 @@ src/
 │ ├── DeepSkyField.jsx # (Planned) Future nebula or DSO handler
 │ ├── StarField.jsx # Main GPU-rendered 3D starfield
 │ ├── StarGuide.jsx # Sidebar UI for browsing/searching stars
-│ └── StarOfTheDay.jsx # Random daily featured star generator
+│ └── SpaceBrief.jsx # Daily space news generator
 ├── ui/
 │ ├── LoadingOverlay.jsx # Animated loading spinner + intro fade
 │ └── StarInfoCard.jsx # Displays detailed star info + facts

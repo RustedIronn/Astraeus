@@ -1,7 +1,15 @@
 export default async function handler(req, res) {
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    return res.status(200).end();
+  }
+
   try {
     const response = await fetch("https://www.esa.int/api/v1/media?order=-date&limit=1");
     if (!response.ok) throw new Error("ESA API error");
+
     const data = await response.json();
 
     res.setHeader("Access-Control-Allow-Origin", "*");

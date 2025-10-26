@@ -2,16 +2,16 @@ import React, { useEffect } from "react";
 
 export default function SpectralLegend() {
   const classes = [
-    { type: "O", color: "#6f9eff" },
-    { type: "B", color: "#8cb4ff" },
-    { type: "A", color: "#b5e0ff" },
-    { type: "F", color: "#f8f7ff" },
-    { type: "G", color: "#ffe6c7" },
-    { type: "K", color: "#ffb06b" },
-    { type: "M", color: "#ff6f61" },
-    { type: "L", color: "#d64b4b" },
-    { type: "T", color: "#a855f7" },
-    { type: "Y", color: "#6b21a8" },
+    { type: "O", color: "#6ea2ff" },
+    { type: "B", color: "#8fc0ff" },
+    { type: "A", color: "#bfe6ff" },
+    { type: "F", color: "#fff8e1" }, 
+    { type: "G", color: "#ffd580" },
+    { type: "K", color: "#ff9950" },
+    { type: "M", color: "#ff635a" },
+    { type: "L", color: "#e64a4a" },
+    { type: "T", color: "#a94bff" },
+    { type: "Y", color: "#741fbf" },
   ];
 
   useEffect(() => {
@@ -24,16 +24,16 @@ export default function SpectralLegend() {
 
   const gradient = `linear-gradient(
     135deg,
-    rgba(111,158,255,0.18) 0%,
-    rgba(140,180,255,0.16) 10%,
-    rgba(181,224,255,0.14) 22%,
-    rgba(248,247,255,0.12) 34%,
-    rgba(255,230,199,0.14) 48%,
-    rgba(255,176,107,0.14) 60%,
-    rgba(255,111,97,0.15) 72%,
-    rgba(214,75,75,0.15) 80%,
-    rgba(168,85,247,0.16) 90%,
-    rgba(107,33,168,0.18) 100%
+    rgba(111,162,255,0.18) 0%,
+    rgba(143,192,255,0.16) 10%,
+    rgba(191,230,255,0.14) 22%,
+    rgba(255,248,225,0.12) 34%,
+    rgba(255,213,128,0.14) 48%,
+    rgba(255,153,80,0.14) 60%,
+    rgba(255,99,90,0.15) 72%,
+    rgba(230,74,74,0.15) 80%,
+    rgba(169,75,255,0.16) 90%,
+    rgba(116,31,191,0.18) 100%
   )`;
 
   return (
@@ -55,9 +55,11 @@ export default function SpectralLegend() {
         flex flex-col items-center space-y-2
         z-[9999] transition-all duration-300 ease-out
         hover:shadow-[0_0_30px_rgba(192,132,252,0.35)]
+        overflow-hidden
       "
     >
-      {/* Header */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(160,100,255,0.1)_0%,transparent_80%)] blur-3xl opacity-60 z-0"></div>
+
       <h3
         className="
           text-[clamp(0.8rem,0.9vw,1rem)]
@@ -65,16 +67,16 @@ export default function SpectralLegend() {
           bg-clip-text text-transparent
           tracking-wide text-center border-b border-white/10 pb-1 w-full
           drop-shadow-[0_0_6px_rgba(200,200,255,0.3)]
+          relative z-10
         "
       >
         • Spectral Classes •
       </h3>
 
-      {/* Grid (5 per row, perfect symmetry) */}
       <div
         className="
           grid grid-cols-5 gap-y-2 gap-x-3 justify-items-center
-          w-full mt-1
+          w-full mt-1 relative z-10
         "
       >
         {classes.map((c) => (
@@ -90,7 +92,7 @@ export default function SpectralLegend() {
               className="w-[clamp(0.75rem,0.9vw,1rem)] h-[clamp(0.75rem,0.9vw,1rem)] rounded-full"
               style={{
                 background: c.color,
-                boxShadow: `0 0 6px ${c.color}`,
+                boxShadow: `0 0 10px ${c.color}, 0 0 20px ${c.color}40`,
               }}
             ></div>
             <span className="text-gray-100 text-[clamp(0.7rem,0.8vw,0.85rem)]">

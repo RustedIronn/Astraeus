@@ -17,52 +17,42 @@ export default function useStars() {
   };
 
   const generateFact = (star) => {
-    const type = (star.spect?.trim()?.charAt(0)?.toUpperCase() || "G");
-    const dist = !isNaN(parseFloat(star.dist)) ? parseFloat(star.dist) : Math.floor(Math.random() * 800 + 20);
-    const mag = !isNaN(parseFloat(star.mag)) ? parseFloat(star.mag) : 5.5;
-    const con = star.con?.trim() || "an uncharted constellation";
+  const type = star.spect?.trim()?.charAt(0)?.toUpperCase() || "G";
+  const dist = !isNaN(parseFloat(star.dist)) ? parseFloat(star.dist) : Math.floor(Math.random() * 800 + 20);
+  const mag = !isNaN(parseFloat(star.mag)) ? parseFloat(star.mag) : 5.5;
+  const con = star.con?.trim() || "an uncharted region";
 
-    const personalities = {
-      O: "a fierce blue supergiant burning at extreme heat",
-      B: "a luminous blue-white giant",
-      A: "a bright white star with icy brilliance",
-      F: "a yellow-white star of balanced warmth",
-      G: "a steady yellow star like our Sun",
-      K: "an orange star cooler and older than Sol",
-      M: "a quiet red dwarf — small but long-lived",
-      L: "a fading ember of ancient light",
-      T: "a cool brown dwarf, faint and ghostly",
-      Y: "an ultra-cool brown dwarf barely glowing",
-    };
-
-    let distanceMood =
-      dist < 20
-        ? "A nearby cosmic neighbor."
-        : dist < 200
-        ? "Its light crosses nearby space."
-        : dist < 1000
-        ? "Light centuries away."
-        : "Ancient light from deep space.";
-
-    let brightnessMood =
-      mag < 1.5
-        ? "Among the brightest in its sky."
-        : mag < 3.5
-        ? "Easily visible on clear nights."
-        : "Barely visible without aid.";
-
-    const endings = [
-      "Often studied for its stellar makeup.",
-      "Possibly surrounded by exoplanets.",
-      "Used as a calibration star in astronomy.",
-      "A core part of its constellation.",
-      "Observed regularly for spectral shifts.",
-    ];
-
-    const ending = endings[Math.floor(Math.random() * endings.length)];
-
-    return `A ${personalities[type] || "mysterious star"}, about ${Math.round(dist)} ly away in ${con}. ${brightnessMood} ${distanceMood} ${ending}`;
+  const classifications = {
+    O: "hot, massive blue main-sequence star",
+    B: "blue-white star of high luminosity",
+    A: "white star with strong hydrogen lines",
+    F: "yellow-white star with moderate temperature",
+    G: "yellow main-sequence star similar to the Sun",
+    K: "orange star cooler than the Sun",
+    M: "red dwarf star with low surface temperature",
+    L: "cool substellar brown dwarf",
+    T: "methane-dominated brown dwarf",
+    Y: "ultra-cool brown dwarf with minimal luminosity",
   };
+
+  const distanceDesc =
+    dist < 20
+      ? "Relatively close to the Solar System."
+      : dist < 200
+      ? "Located within the local stellar neighborhood."
+      : dist < 1000
+      ? "Positioned within the nearby galactic region."
+      : "Situated in the outer regions of the Milky Way.";
+
+  const visibility =
+    mag < 1.5
+      ? "Visible to the naked eye under most conditions."
+      : mag < 3.5
+      ? "Visible under dark-sky conditions."
+      : "Requires optical aid for observation.";
+
+  return `${star.name || "This star"} is a ${classifications[type] || "main-sequence star"} approximately ${Math.round(dist)} light years from Earth, in ${con}. It has an apparent magnitude of ${mag.toFixed(1)}. ${distanceDesc} ${visibility}`;
+};
 
   const clean = (val) =>
     val === undefined || val === null || val === "" ? null : String(val).trim();
@@ -90,9 +80,9 @@ export default function useStars() {
             : clean(s.hip ?? s.HIP)
             ? `HIP ${s.hip ?? s.HIP}`
             : "Unnamed Star"),
-        x: parseFloat(s.x ?? s.X) * 7,
-        y: parseFloat(s.y ?? s.Y) * 7,
-        z: parseFloat(s.z ?? s.Z) * 7,
+        x: parseFloat(s.x ?? s.X) * 10,
+        y: parseFloat(s.y ?? s.Y) * 10,
+        z: parseFloat(s.z ?? s.Z) * 10,
         mag: parseFloat(s.mag ?? s.Mag),
         dist: parseFloat(s.dist ?? s.Dist),
         con: clean(s.con ?? s.Con) || "—",

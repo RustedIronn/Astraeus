@@ -34,7 +34,6 @@ export default function CinematicIntro({ onFinish }) {
       window.addEventListener("click", clickPlay);
     });
 
-    // ⏱ shorten total intro runtime (3.2s + 0.8s fade = ~4s total)
     const timer = setTimeout(() => endIntro(), 3500);
     const handleClick = () => endIntro();
     window.addEventListener("click", handleClick);
@@ -52,7 +51,7 @@ export default function CinematicIntro({ onFinish }) {
           className="
             fixed inset-0 flex flex-col items-center justify-center
             bg-[radial-gradient(circle_at_center,#000010_0%,#000000_100%)]
-            text-white font-[Orbitron] cursor-pointer z-[9999]
+            text-white font-[Iceland] cursor-pointer z-[9999]
             overflow-hidden
           "
           initial={{ opacity: 1 }}
@@ -66,8 +65,8 @@ export default function CinematicIntro({ onFinish }) {
               tracking-[clamp(6px,1vw,12px)]
               text-center
               text-transparent bg-clip-text
-              bg-gradient-to-b from-white to-[#a855f7]/70
-              drop-shadow-[0_0_20px_rgba(168,85,247,0.3)]
+              bg-gradient-to-b from-[#c0dfff] via-[#6ea2ff] to-[#9b5de5]
+              drop-shadow-[0_0_25px_rgba(110,162,255,0.4)]
             "
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -82,15 +81,15 @@ export default function CinematicIntro({ onFinish }) {
               mt-[1.2vh]
               text-[clamp(0.9rem,1.2vw,1.2rem)]
               tracking-[clamp(2px,0.5vw,4px)]
-              text-[#a855f7]
-              text-center
-              drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]
+              text-[#80aaff]
+              text-center uppercase
+              drop-shadow-[0_0_10px_rgba(128,170,255,0.6)]
             "
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.4, duration: 1.2 }}
           >
-            Celestial Systems Online ✦
+            Version 1.4.0
           </motion.p>
 
           {/* 🖱 Skip Hint */}
@@ -100,12 +99,13 @@ export default function CinematicIntro({ onFinish }) {
               text-[clamp(0.75rem,0.9vw,1rem)]
               tracking-[clamp(1px,0.3vw,3px)]
               text-gray-400 opacity-60
+              font-[Iceberg]
             "
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.6 }}
             transition={{ delay: 2.4, duration: 0.8 }}
           >
-            (Click anywhere to skip)
+            Click anywhere to skip
           </motion.p>
         </motion.div>
       )}

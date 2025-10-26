@@ -82,21 +82,34 @@ function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
       vColor = color;
       vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
       float twinkle = 0.85 + 0.35 * sin(uTime * 3.0 + position.x * 0.27 + position.y * 0.41 + position.z * 0.33);
-      gl_PointSize = size * twinkle * (300.0 / -mvPosition.z);
+      float dist = length(mvPosition.xyz);
+      float fade = smoothstep(6000.0, 1000.0, dist);
+      gl_PointSize = size * twinkle * fade * (300.0 / -mvPosition.z);
       gl_Position = projectionMatrix * mvPosition;
     }
   `;
 
   const fragmentShader = `
     varying vec3 vColor;
-    void main() {
-      float d = length(gl_PointCoord - vec2(0.5));
-      if (d > 0.5) discard;
-      float core = smoothstep(0.35, 0.0, d);
-      float glow = smoothstep(0.5, 0.2, d);
-      vec3 color = vColor * (core * 1.4 + glow * 0.6);
-      gl_FragColor = vec4(color, 1.0 - d * 0.4);
-    }
+  void main() {
+    float d = length(gl_PointCoord - vec2(0.5));
+if (d > 0.5) discard;
+
+// soften falloff for sub-pixel stars
+float edge = smoothstep(0.48, 0.35, d);
+float core = smoothstep(0.25, 0.0, d);
+float glow = smoothstep(0.45, 0.1, d);
+
+// add subpixel anti-aliasing
+float aa = fwidth(d) * 1.5;
+float softAlpha = smoothstep(0.5, 0.5 - aa, d);
+
+// slightly saturate color
+vec3 saturated = normalize(vColor + 0.2 * vColor * (1.0 - vColor));
+vec3 color = saturated * (core * 1.6 + glow * 0.9);
+
+gl_FragColor = vec4(color, softAlpha * (1.0 - d * 0.3));
+  }
   `;
 
   const geometry = useMemo(() => {
@@ -114,7 +127,11 @@ function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
         fragmentShader,
         vertexColors: true,
         transparent: true,
-        blending: THREE.AdditiveBlending,
+        blending: THREE.CustomBlending,
+        blendEquation: THREE.AddEquation,
+        blendSrc: THREE.SrcAlphaFactor,
+        blendDst: THREE.OneFactor,
+        depthTest: true,
         depthWrite: false,
         uniforms: { uTime: { value: 0 } },
       }),

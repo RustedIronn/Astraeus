@@ -5,7 +5,8 @@ import StarCanvas from "./StarCanvas";
 import StarGuide from "../features/StarGuide";
 import StarInfoCard from "../ui/StarInfoCard";
 import SpectralLegend from "../analytics/SpectralLegend";
-import StarOfTheDay from "../features/StarOfTheDay";
+import SpaceBrief from "../features/SpaceBrief";
+import LoadingOverlay from "../ui/LoadingOverlay";
 import CinematicIntro from "../features/CinematicIntro";
 import StarAnalytics from "../analytics/StarAnalytics";
 import ErrorBoundary from "../ErrorBoundary";
@@ -25,15 +26,13 @@ export default function AppLayout() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Sequence control: intro → loader → stars ready
+  // 🎞️ Control sequence: intro → loader → stars ready
   useEffect(() => {
     if (introDone) {
       setShowLoader(true);
-      // Keep loader visible for cinematic feel even if stars load fast
       const timer = setTimeout(() => {
         if (!dataLoading) setShowLoader(false);
         else {
-          // keep checking until stars finish
           const check = setInterval(() => {
             if (!dataLoading) {
               setShowLoader(false);
@@ -41,53 +40,36 @@ export default function AppLayout() {
             }
           }, 500);
         }
-      }, 1500); // <- delay to ensure "Initializing Star Map" always appears
+      }, 1500);
       return () => clearTimeout(timer);
     }
   }, [introDone, dataLoading]);
 
   useEffect(() => {
-    if (introDone && !showLoader && !dataLoading) {
-      setFinalReady(true);
-    }
+    if (introDone && !showLoader && !dataLoading) setFinalReady(true);
   }, [introDone, showLoader, dataLoading]);
 
   return (
     <div
-      className={`
-        relative w-screen h-screen overflow-hidden transition-colors duration-700
-        ${
+      style={{
+        background:
           theme === "night"
-            ? "bg-[radial-gradient(circle_at_center,#070014_0%,#000000_100%)]"
-            : "bg-[radial-gradient(circle_at_40%_30%,#2e0f4c_0%,#513a83_35%,#9e7cff_65%,#ffb36b_100%)] shadow-[inset_0_0_200px_rgba(255,200,150,0.15),inset_0_0_350px_rgba(255,150,100,0.1)]"
-        }
-      `}
+            ? "radial-gradient(circle at 50% 50%, #020014 0%, #000000 100%)"
+            : "radial-gradient(circle at 40% 30%, #1a0736 0%, #4b1b66 65%, #0d001b 100%)",
+        boxShadow:
+          theme === "dawn"
+            ? "inset 0 0 250px rgba(120,80,255,0.15), inset 0 0 400px rgba(80,50,150,0.25)"
+            : "none",
+        transition: "background 1.5s ease, box-shadow 1.5s ease",
+      }}
+      className="relative w-screen h-screen overflow-hidden"
     >
       {/* 🎬 Cinematic Intro */}
       {!introDone && <CinematicIntro onFinish={() => setIntroDone(true)} />}
 
       {/* 🚀 Loading Overlay */}
       <AnimatePresence>
-        {introDone && showLoader && (
-          <motion.div
-            key="loading-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
-            className="
-              absolute inset-0 flex flex-col justify-center items-center
-              bg-[radial-gradient(circle_at_center,#050010_0%,#000_100%)]
-              z-[9999] text-center
-            "
-          >
-            <div className="w-[8vw] h-[8vw] border-[3px] border-[rgba(157,77,255,0.2)] border-t-[#b266ff] rounded-full animate-spin shadow-[0_0_15px_#c77dff88]" />
-            <h2 className="font-[Iceland] text-[#b266ff] font-normal text-[clamp(1rem,2vw,1.5rem)] mt-[2vh] tracking-wide animate-pulse">
-              Initializing Star Map...
-            </h2>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_0%,transparent_70%)] bg-[length:400%_400%] animate-[twinkle_8s_ease-in-out_infinite]" />
-          </motion.div>
-        )}
+        {introDone && showLoader && <LoadingOverlay />}
       </AnimatePresence>
 
       {/* 🌌 Star Canvas */}
@@ -103,7 +85,7 @@ export default function AppLayout() {
         </div>
       </ErrorBoundary>
 
-      {/* 🧭 UI Modules (appear only when everything ready) */}
+      {/* 🧭 UI Modules */}
       {finalReady && (
         <motion.div
           key="ui-wrapper"
@@ -120,7 +102,7 @@ export default function AppLayout() {
               setTheme={setTheme}
             />
             <SpectralLegend />
-            <StarOfTheDay />
+            <SpaceBrief />
             <StarAnalytics />
           </div>
         </motion.div>
@@ -155,7 +137,7 @@ export default function AppLayout() {
         </div>
       )}
 
-      {/* ✨ Animations */}
+      {/* ✨ Extra Animations */}
       <style>{`
         @keyframes twinkle {
           0%, 100% { background-position: 0% 50%; }
