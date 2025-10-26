@@ -67,7 +67,7 @@ export default function SpaceBrief() {
         } catch (err2) {
           console.error("Both APIs failed:", err2);
 
-          // 🌌 Final fallback — your original Carina Nebula message
+          // 🌌 Final fallback — Carina Nebula info
           cacheAndSet({
             title: "Space News Unavailable",
             explanation:
@@ -179,24 +179,21 @@ export default function SpaceBrief() {
         {showMore ? "Show Less" : "Read More"}
       </button>
 
-      {/* 🚀 Smaller NASA Carina Nebula Article button */}
-      <button
-        onClick={() =>
-          window.open(
-            "https://science.nasa.gov/missions/webb/nasas-webb-reveals-cosmic-cliffs-glittering-landscape-of-star-birth/",
-            "_blank"
-          )
-        }
-        className="
-          mt-2 text-[0.8rem] px-2 py-1
-          text-cyan-300 font-[Iceland]
-          bg-transparent rounded-md
-          hover:text-white hover:underline
-          transition-all duration-200
-        "
-      >
-        NASA Carina Nebula Article →
-      </button>
+      {/* 🚀 Explore Full Article button */}
+      {data.articleUrl && (
+        <button
+          onClick={() => window.open(data.articleUrl, "_blank")}
+          className="
+            mt-2 text-[0.8rem] px-2 py-1
+            text-cyan-300 font-[Iceland]
+            bg-transparent rounded-md
+            hover:text-white hover:underline
+            transition-all duration-200
+          "
+        >
+          Explore Full Article →
+        </button>
+      )}
 
       <style>{`
         @keyframes auroraFlow {
