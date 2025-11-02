@@ -51,7 +51,7 @@ function ThemedLighting({ theme }) {
 
   gl.setClearColor("#0b0020");
 
-  ambientRef.current.color.set("#c4b2ff"); // softer lavender tone
+  ambientRef.current.color.set("#b8a9ff"); // softer lavender tone
   ambientRef.current.intensity = 0.45;
 
   pointRef.current.color.set("#a88cff"); // dawn hue

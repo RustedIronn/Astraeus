@@ -22,38 +22,30 @@ export default function SpaceBrief() {
       };
 
       try {
-        // 🛰️ Try Spaceflight API first
         const res = await fetch("/api/space-news");
         if (!res.ok) throw new Error("Spaceflight API failed");
         const json = await res.json();
         const article = json.results?.[0];
         if (!article) throw new Error("No valid article returned");
 
-        const formattedData = {
+        cacheAndSet({
           title: article.title,
           explanation: article.summary,
           url: article.image_url,
           articleUrl: article.url,
           media_type: "image",
           source: "Spaceflight News",
-        };
-
-        cacheAndSet(formattedData);
-      } catch (err1) {
-        console.warn("Spaceflight API failed, switching to ESA...", err1);
-
+        });
+      } catch {
         try {
-          // 🚀 Fallback to ESA API
           const res2 = await fetch("/api/esa-news");
           if (!res2.ok) throw new Error("ESA API failed");
           const json2 = await res2.json();
           const item = json2?.[0] || json2.results?.[0] || json2.items?.[0];
-
-          const formattedData = {
+          cacheAndSet({
             title: item?.title || "ESA Media Update",
             explanation:
-              item?.description ||
-              "European Space Agency feed fetched successfully.",
+              item?.description || "European Space Agency feed fetched successfully.",
             url: item?.image?.url || item?.url || "",
             articleUrl:
               item?.permalink ||
@@ -61,19 +53,12 @@ export default function SpaceBrief() {
               "https://www.esa.int/",
             media_type: "image",
             source: "European Space Agency",
-          };
-
-          cacheAndSet(formattedData);
-        } catch (err2) {
-          console.error("Both APIs failed:", err2);
-
-          // 🌌 Final fallback — Carina Nebula info
+          });
+        } catch {
           cacheAndSet({
             title: "Space News Unavailable",
             explanation:
-              "Live space news is temporarily unreachable. Please check back later! " +
-              "But if you wanna learn about this image — it's the Carina Nebula, captured by the James Webb Space Telescope. " +
-              "This massive stellar nursery is packed with young stars and cosmic dust, sitting about 7,600 light-years away in the constellation Carina.",
+              "Live space news is temporarily unreachable. But this image shows the Carina Nebula — a massive stellar nursery captured by the James Webb Space Telescope, located 7,600 light-years away.",
             url: "https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2022/07/STScI-01GA6KKWG229B16K4Q38CH3BXS.png?w=900&h=521&fit=crop&crop=faces%2Cfocalpoint",
             articleUrl:
               "https://science.nasa.gov/missions/webb/nasas-webb-reveals-cosmic-cliffs-glittering-landscape-of-star-birth/",
@@ -89,16 +74,8 @@ export default function SpaceBrief() {
 
   if (!data)
     return (
-      <div
-        className="
-          fixed top-[1.5vh] right-[0.3vw]
-          w-[315px] p-4 rounded-xl
-          bg-[rgba(20,20,30,0.3)] text-white font-[Iceberg]
-          backdrop-blur-md shadow-[0_6px_20px_rgba(0,0,0,0.4)]
-          text-center
-        "
-      >
-        <p>Fetching today's space brief...</p>
+      <div className="w-full h-full flex justify-center items-center text-cyan-200 font-[Iceland]">
+        Fetching today’s space brief...
       </div>
     );
 
@@ -109,37 +86,32 @@ export default function SpaceBrief() {
 
   return (
     <div
+      className="
+        w-full h-full flex flex-col
+        text-gray-100 font-[Iceberg]
+        border border-[rgba(100,180,255,0.25)]
+        rounded-2xl p-4 md:p-6
+        backdrop-blur-[3px] saturate-[160%]
+        overflow-y-auto
+        animate-[fadeIn_0.6s_ease-out]
+        custom-scrollbar
+      "
       style={{
         backgroundImage: `linear-gradient(
           130deg,
-          rgba(0, 220, 255, 0.18),
-          rgba(0, 160, 255, 0.15),
-          rgba(80, 120, 255, 0.12),
-          rgba(160, 60, 255, 0.15),
-          rgba(0, 255, 160, 0.18)
+          rgba(0,220,255,0.18),
+          rgba(0,160,255,0.15),
+          rgba(80,120,255,0.12),
+          rgba(160,60,255,0.15),
+          rgba(0,255,160,0.18)
         )`,
         backgroundSize: "400% 400%",
         animation: "auroraFlow 22s ease-in-out infinite",
       }}
-      className="
-        fixed top-[1.5vh] right-[1.5vw]
-        w-[clamp(230px,20vw,305px)] h-[clamp(320px,45vh,380px)]
-        text-gray-100 font-[Iceberg]
-        border border-[rgba(100,180,255,0.3)] rounded-2xl
-        backdrop-blur-[3px] saturate-[160%]
-        p-[clamp(0.8rem,2vw,1rem)]
-        overflow-y-auto
-        shadow-[0_0_25px_rgba(0,180,255,0.25)]
-        transition-all duration-300 ease-out
-        hover:shadow-[0_0_35px_rgba(0,200,255,0.35)]
-        scrollbar-thin scroll-smooth
-        z-[9999]
-        custom-scrollbar
-      "
     >
       <h3
         className="
-          text-[1.1rem] mb-2
+          text-[1.3rem] md:text-[1.5rem] mb-2
           bg-gradient-to-r from-cyan-300 via-blue-300 to-teal-200
           bg-clip-text text-transparent border-b border-white/10 pb-1
           drop-shadow-[0_0_6px_rgba(130,200,255,0.4)]
@@ -148,7 +120,7 @@ export default function SpaceBrief() {
         ⭐ The Space Brief
       </h3>
 
-      <p className="mt-1 mb-2 font-bold text-[0.95rem] text-cyan-200 font-[Iceland]">
+      <p className="mt-1 mb-2 font-bold text-[1rem] text-cyan-200 font-[Iceland]">
         {data.title}
       </p>
 
@@ -159,43 +131,43 @@ export default function SpaceBrief() {
           className="
             w-full rounded-lg mt-2 object-cover
             shadow-[0_2px_8px_rgba(0,0,0,0.4)]
-            max-h-[180px] sm:max-h-[140px]
+            max-h-[240px]
           "
         />
       )}
 
-      <p className="mt-3 text-[0.85rem] leading-[1.4] font-[Iceland] text-cyan-100/90">
+      <p className="mt-3 text-[0.9rem] leading-[1.5] font-[Iceland] text-cyan-100/90">
         {text}
       </p>
 
-      {/* 🛰️ Read More Button */}
-      <button
-        onClick={() => setShowMore(!showMore)}
-        className="
-          mt-3 px-3 py-1.5 text-[0.8rem]
-          text-cyan-300 font-[Iceberg] border border-cyan-300 rounded-md
-          hover:bg-cyan-300 hover:text-black hover:scale-105
-          transition-all duration-200
-        "
-      >
-        {showMore ? "Show Less" : "Read More"}
-      </button>
-
-      {/* 🚀 Explore Full Article button */}
-      {data.articleUrl && (
+      <div className="mt-3 flex flex-wrap gap-2">
         <button
-          onClick={() => window.open(data.articleUrl, "_blank")}
+          onClick={() => setShowMore(!showMore)}
           className="
-            mt-2 text-[0.8rem] px-2 py-1
-            text-cyan-300 font-[Iceland]
-            bg-transparent rounded-md
-            hover:text-white hover:underline
+            px-3 py-1.5 text-[0.8rem]
+            text-cyan-300 font-[Iceberg] border border-cyan-300 rounded-md
+            hover:bg-cyan-300 hover:text-black hover:scale-105
             transition-all duration-200
           "
         >
-          Explore Full Article →
+          {showMore ? "Show Less" : "Read More"}
         </button>
-      )}
+
+        {data.articleUrl && (
+          <button
+            onClick={() => window.open(data.articleUrl, "_blank")}
+            className="
+              px-3 py-1.5 text-[0.8rem]
+              text-cyan-300 font-[Iceland]
+              border border-transparent
+              hover:text-white hover:underline
+              transition-all duration-200
+            "
+          >
+            Explore Full Article →
+          </button>
+        )}
+      </div>
 
       <style>{`
         @keyframes auroraFlow {
@@ -203,21 +175,14 @@ export default function SpaceBrief() {
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 10px;
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-thumb {
           background: linear-gradient(180deg, rgba(0,255,255,0.4), rgba(0,180,255,0.5));
           border-radius: 10px;
-          box-shadow: 0 0 10px rgba(0,180,255,0.4);
-          transition: all 0.3s ease;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(180deg, rgba(0,255,255,0.7), rgba(0,180,255,0.8));
-          box-shadow: 0 0 12px rgba(0,255,255,0.6);
         }
       `}</style>
     </div>

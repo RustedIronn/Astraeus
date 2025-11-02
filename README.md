@@ -42,8 +42,8 @@ The **StarAnalytics** component performs statistical and visual analysis on the 
 - Expands with animation (Framer Motion) when a star is selected.  
 - Displays detailed data (name, magnitude, distance, spectral type, and a dynamically generated fun fact).  
 
-### 🌅 Star of the Day
-- Highlights a random, notable star with a daily factoid to add user engagement.
+### 🌅 SpaceBrief
+- Pulls Space Articles from SpaceFlight and ESA to add user engagement.
 
 ### 🎨 Spectral Legend
 - Displays the colour-temperature mapping for all spectral types for quick scientific reference.
@@ -64,14 +64,12 @@ src/
 │ ├── AppLayout.jsx # Root layout, orchestrates all modules
 │ ├── FlyToStar.jsx # Camera transition system for star focus
 │ ├── StarCanvas.jsx # Three.js canvas wrapper
-│ ├── useDeepSkyObjects.jsx # (Planned) Nebula/deep-sky data hook
 │ └── useStars.jsx # Core star data loader & mapping logic
 ├── features/
 │ ├── BackgroundMilkyway.jsx # (Planned) Background Milky Way panorama
 │ ├── CinematicIntro.jsx # Animated intro & onboarding
 │ ├── ClickHandler.jsx # Handles click/raycast events
 │ ├── ConstellationViewer.jsx # Draws constellation line connections
-│ ├── DeepSkyField.jsx # (Planned) Future nebula or DSO handler
 │ ├── StarField.jsx # Main GPU-rendered 3D starfield
 │ ├── StarGuide.jsx # Sidebar UI for browsing/searching stars
 │ └── SpaceBrief.jsx # Daily space news generator

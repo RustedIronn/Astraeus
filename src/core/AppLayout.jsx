@@ -4,12 +4,12 @@ import useStars from "./useStars";
 import StarCanvas from "./StarCanvas";
 import StarGuide from "../features/StarGuide";
 import StarInfoCard from "../ui/StarInfoCard";
-import SpectralLegend from "../analytics/SpectralLegend";
-import SpaceBrief from "../features/SpaceBrief";
 import LoadingOverlay from "../ui/LoadingOverlay";
 import CinematicIntro from "../features/CinematicIntro";
-import StarAnalytics from "../analytics/StarAnalytics";
 import ErrorBoundary from "../ErrorBoundary";
+
+// 🧭 Import new unified dashboard
+import DashboardHub from "../ui/DashboardHub";
 
 export default function AppLayout() {
   const { stars, loading: dataLoading, selectedStar, setSelectedStar } = useStars();
@@ -26,7 +26,7 @@ export default function AppLayout() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 🎞️ Control sequence: intro → loader → stars ready
+  // 🎞️ Sequence: intro → loader → stars ready
   useEffect(() => {
     if (introDone) {
       setShowLoader(true);
@@ -101,9 +101,9 @@ export default function AppLayout() {
               theme={theme}
               setTheme={setTheme}
             />
-            <SpectralLegend />
-            <SpaceBrief />
-            <StarAnalytics />
+
+            {/* ✅ Unified dashboard with all panels inside */}
+            <DashboardHub theme={theme} />
           </div>
         </motion.div>
       )}
@@ -137,7 +137,6 @@ export default function AppLayout() {
         </div>
       )}
 
-      {/* ✨ Extra Animations */}
       <style>{`
         @keyframes twinkle {
           0%, 100% { background-position: 0% 50%; }

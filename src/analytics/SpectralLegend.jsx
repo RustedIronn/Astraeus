@@ -2,16 +2,76 @@ import React, { useEffect } from "react";
 
 export default function SpectralLegend() {
   const classes = [
-    { type: "O", color: "#6ea2ff" },
-    { type: "B", color: "#8fc0ff" },
-    { type: "A", color: "#bfe6ff" },
-    { type: "F", color: "#fff8e1" }, 
-    { type: "G", color: "#ffd580" },
-    { type: "K", color: "#ff9950" },
-    { type: "M", color: "#ff635a" },
-    { type: "L", color: "#e64a4a" },
-    { type: "T", color: "#a94bff" },
-    { type: "Y", color: "#741fbf" },
+    {
+      type: "O",
+      color: "#7dc8ff",
+      name: "Blue Supergiants",
+      temp: "30,000–50,000 K",
+      rarity: "<0.1%",
+    },
+    {
+      type: "B",
+      color: "#9ed1ff",
+      name: "Blue-White Stars",
+      temp: "10,000–30,000 K",
+      rarity: "0.1%",
+    },
+    {
+      type: "A",
+      color: "#cfe8ff",
+      name: "White Stars",
+      temp: "7,500–10,000 K",
+      rarity: "0.6%",
+    },
+    {
+      type: "F",
+      color: "#fff8e1",
+      name: "Yellow-White Stars",
+      temp: "6,000–7,500 K",
+      rarity: "3%",
+    },
+    {
+      type: "G",
+      color: "#ffd580",
+      name: "Yellow Dwarfs",
+      temp: "5,000–6,000 K",
+      rarity: "7.5%",
+    },
+    {
+      type: "K",
+      color: "#ff9950",
+      name: "Orange Stars",
+      temp: "3,500–5,000 K",
+      rarity: "12%",
+    },
+    {
+      type: "M",
+      color: "#ff6b5a",
+      name: "Red Dwarfs",
+      temp: "2,000–3,500 K",
+      rarity: "~76%",
+    },
+    {
+      type: "L",
+      color: "#e64a4a",
+      name: "Brown Dwarfs",
+      temp: "1,300–2,000 K",
+      rarity: "Rare",
+    },
+    {
+      type: "T",
+      color: "#b46bff",
+      name: "Methane Dwarfs",
+      temp: "700–1,300 K",
+      rarity: "Rare",
+    },
+    {
+      type: "Y",
+      color: "#7b2cff",
+      name: "Cool Brown Dwarfs",
+      temp: "<700 K",
+      rarity: "Extremely Rare",
+    },
   ];
 
   useEffect(() => {
@@ -44,60 +104,73 @@ export default function SpectralLegend() {
         animation: "auroraSpectrum 20s ease-in-out infinite",
       }}
       className="
-        fixed bottom-[1vh] left-[0.8vw]
-        bg-transparent
-        backdrop-blur-[3px] saturate-[150%]
-        border border-[rgba(180,100,255,0.25)] rounded-2xl
-        shadow-[0_0_18px_rgba(160,80,255,0.25)]
-        p-[clamp(0.6rem,0.8vw,0.9rem)]
-        w-[clamp(240px,20vw,260px)] h-[clamp(120px,22vh,150px)]
-        text-gray-100 font-[Nova_Square]
-        flex flex-col items-center space-y-2
-        z-[9999] transition-all duration-300 ease-out
-        hover:shadow-[0_0_30px_rgba(192,132,252,0.35)]
-        overflow-hidden
+        w-full h-full flex flex-col items-center justify-start
+        backdrop-blur-[4px] saturate-[150%]
+        border border-[rgba(180,100,255,0.25)]
+        rounded-2xl shadow-[0_0_18px_rgba(160,80,255,0.25)]
+        p-4 md:p-6
+        font-[Nova_Square] text-gray-100
+        overflow-y-auto custom-scrollbar
+        animate-[fadeIn_0.6s_ease-out]
       "
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(160,100,255,0.1)_0%,transparent_80%)] blur-3xl opacity-60 z-0"></div>
-
       <h3
         className="
-          text-[clamp(0.8rem,0.9vw,1rem)]
+          text-[clamp(1rem,1.2vw,1.3rem)]
           bg-gradient-to-r from-[#b3e5ff] via-[#e6f7ff] to-[#bfa1ff]
           bg-clip-text text-transparent
-          tracking-wide text-center border-b border-white/10 pb-1 w-full
+          tracking-wide text-center
           drop-shadow-[0_0_6px_rgba(200,200,255,0.3)]
-          relative z-10
+          mb-4
         "
       >
-        • Spectral Classes •
+        • Spectral Classification •
       </h3>
 
       <div
         className="
-          grid grid-cols-5 gap-y-2 gap-x-3 justify-items-center
-          w-full mt-1 relative z-10
+          grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5
+          gap-y-6 gap-x-4 justify-items-center w-full
         "
       >
         {classes.map((c) => (
           <div
             key={c.type}
-            className="
-              flex flex-col items-center justify-center
-              space-y-[2px] transition-transform duration-200
-              hover:scale-[1.08]
-            "
+            className="flex flex-col items-center text-center space-y-2 group"
           >
+            {/* Glowing Star */}
             <div
-              className="w-[clamp(0.75rem,0.9vw,1rem)] h-[clamp(0.75rem,0.9vw,1rem)] rounded-full"
+              className="relative transition-transform duration-300 group-hover:scale-125"
               style={{
-                background: c.color,
-                boxShadow: `0 0 10px ${c.color}, 0 0 20px ${c.color}40`,
+                width: "clamp(1.1rem, 1.6vw, 1.8rem)",
+                height: "clamp(1.1rem, 1.6vw, 1.8rem)",
               }}
-            ></div>
-            <span className="text-gray-100 text-[clamp(0.7rem,0.8vw,0.85rem)]">
+            >
+              <div
+                style={{
+                  background: `radial-gradient(circle at 35% 35%, #fff, ${c.color} 60%)`,
+                  boxShadow: `0 0 10px ${c.color}66, 0 0 25px ${c.color}44, inset 0 0 4px ${c.color}`,
+                }}
+                className="w-full h-full rounded-full relative z-10 border border-[rgba(255,255,255,0.1)]"
+              ></div>
+            </div>
+
+            {/* Star Type */}
+            <span
+              className="
+                text-[clamp(0.9rem,1vw,1.1rem)]
+                transition-all duration-200 group-hover:text-cyan-200
+              "
+            >
               {c.type}
             </span>
+
+            {/* Info */}
+            <div className="text-[clamp(0.65rem,0.8vw,0.8rem)] leading-tight opacity-90">
+              <p style={{ color: c.color }}>{c.name}</p>
+              <p className="text-gray-300">{c.temp}</p>
+              <p className="text-gray-400">{c.rarity}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -107,6 +180,15 @@ export default function SpectralLegend() {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, rgba(0,255,255,0.4), rgba(140,100,255,0.5));
+          border-radius: 10px;
         }
       `}</style>
     </div>

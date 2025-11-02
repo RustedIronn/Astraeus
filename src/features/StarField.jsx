@@ -1,22 +1,22 @@
 import React, { useMemo, useRef, useEffect } from "react";
 import * as THREE from "three";
-import { useFrame, useThree, useLoader } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 
 const colorCache = new Map();
 function spectralToColor(spectral) {
   const type = spectral?.trim()?.[0]?.toUpperCase() ?? "G";
   if (!colorCache.has(type)) {
     const map = {
-      O: "#6BB6FF", // bright blue
-      B: "#7EC7FF", // light blue
-      A: "#AECFFF", // bluish white
-      F: "#FFF6C2", // warm white
-      G: "#FFD966", // golden yellow
-      K: "#FF9E40", // orange
-      M: "#FF5540", // deep red-orange
-      L: "#D24D8A", // pinkish magenta
-      T: "#A25AFF", // violet
-      Y: "#713BFF", // deep indigo
+      O: "#66CCFF",
+      B: "#88CCFF",
+      A: "#CFE9FF",
+      F: "#FFF1C1",
+      G: "#FFD87C",
+      K: "#FF9B53",
+      M: "#FF5540",
+      L: "#D85B8F",
+      T: "#A97AFF",
+      Y: "#7C5CFF",
     };
     colorCache.set(type, new THREE.Color(map[type] || "#ffffff"));
   }
@@ -27,35 +27,12 @@ function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
   const { camera, gl } = useThree();
   const raycasterRef = useRef(new THREE.Raycaster());
 
-  const texturePaths = {
-    O: "/textures/star_textures/star_O.jpg",
-    B: "/textures/star_textures/star_B.jpg",
-    A: "/textures/star_textures/star_A.jpg",
-    F: "/textures/star_textures/star_F.jpg",
-    G: "/textures/star_textures/star_G.jpg",
-    K: "/textures/star_textures/star_K.jpg",
-    M: "/textures/star_textures/star_M.jpg",
-    L: "/textures/star_textures/star_L.jpg",
-    T: "/textures/star_textures/star_T.jpg",
-    Y: "/textures/star_textures/star_Y.jpg",
-  };
-
-  const loadedTextures = useLoader(THREE.TextureLoader, Object.values(texturePaths));
-  const textureKeys = Object.keys(texturePaths);
-  const textures = useMemo(
-    () => Object.fromEntries(textureKeys.map((key, i) => [key, loadedTextures[i]])),
-    [loadedTextures]
-  );
-
-  const getStarTexture = (spectral) => {
-    const type = spectral?.trim()?.[0]?.toUpperCase();
-    return textures[type] || textures.G;
-  };
-
-  const { positions, colors, sizes } = useMemo(() => {
+  // 🪐 Generate geometry data
+  const { positions, colors, sizes, offsets } = useMemo(() => {
     const pos = new Float32Array(stars.length * 3);
     const col = new Float32Array(stars.length * 3);
     const siz = new Float32Array(stars.length);
+    const off = new Float32Array(stars.length);
 
     stars.forEach((s, i) => {
       pos[i * 3] = s.x;
@@ -68,48 +45,44 @@ function StarField({ stars, pointsRef, selectedStar, onStarClick }) {
       col[i * 3] = c.r;
       col[i * 3 + 1] = c.g;
       col[i * 3 + 2] = c.b;
+
       siz[i] = THREE.MathUtils.clamp(14 - s.mag * 1.2, 3, 12);
+
+      const hash = Math.sin(i * 12.9898 + 78.233) * 43758.5453;
+      off[i] = hash - Math.floor(hash);
     });
 
-    return { positions: pos, colors: col, sizes: siz };
+    return { positions: pos, colors: col, sizes: siz, offsets: off };
   }, [stars]);
 
+  // 🌌 Star shaders
   const vertexShader = `
     attribute float size;
+    attribute float offset;
     varying vec3 vColor;
     uniform float uTime;
     void main() {
       vColor = color;
       vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-      float twinkle = 0.85 + 0.35 * sin(uTime * 3.0 + position.x * 0.27 + position.y * 0.41 + position.z * 0.33);
-      float dist = length(mvPosition.xyz);
-      float fade = smoothstep(6000.0, 1000.0, dist);
-      gl_PointSize = size * twinkle * fade * (300.0 / -mvPosition.z);
+      float twinkle = 0.85 + 0.35 * sin(uTime * 3.0 + offset * 6.283);
+      gl_PointSize = size * twinkle * (300.0 / -mvPosition.z);
       gl_Position = projectionMatrix * mvPosition;
     }
   `;
 
   const fragmentShader = `
     varying vec3 vColor;
-  void main() {
-    float d = length(gl_PointCoord - vec2(0.5));
-if (d > 0.5) discard;
-
-// soften falloff for sub-pixel stars
-float edge = smoothstep(0.48, 0.35, d);
-float core = smoothstep(0.25, 0.0, d);
-float glow = smoothstep(0.45, 0.1, d);
-
-// add subpixel anti-aliasing
-float aa = fwidth(d) * 1.5;
-float softAlpha = smoothstep(0.5, 0.5 - aa, d);
-
-// slightly saturate color
-vec3 saturated = normalize(vColor + 0.2 * vColor * (1.0 - vColor));
-vec3 color = saturated * (core * 1.6 + glow * 0.9);
-
-gl_FragColor = vec4(color, softAlpha * (1.0 - d * 0.3));
-  }
+    void main() {
+      float d = length(gl_PointCoord - vec2(0.5));
+      if (d > 0.5) discard;
+      float core = pow(smoothstep(0.25, 0.0, d), 1.6);
+      float glow = smoothstep(0.45, 0.1, d);
+      vec3 tint = vec3(0.04, 0.03, 0.01);
+      vec3 color = vColor + tint * (1.0 - d * 2.0);
+      float aa = fwidth(d) * 1.5;
+      float softAlpha = smoothstep(0.5, 0.5 - aa, d);
+      gl_FragColor = vec4(color * (core * 1.6 + glow * 0.9), softAlpha * (1.0 - d * 0.3));
+    }
   `;
 
   const geometry = useMemo(() => {
@@ -117,8 +90,9 @@ gl_FragColor = vec4(color, softAlpha * (1.0 - d * 0.3));
     geom.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geom.setAttribute("color", new THREE.BufferAttribute(colors, 3));
     geom.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+    geom.setAttribute("offset", new THREE.BufferAttribute(offsets, 1));
     return geom;
-  }, [positions, colors, sizes]);
+  }, [positions, colors, sizes, offsets]);
 
   const material = useMemo(
     () =>
@@ -127,10 +101,7 @@ gl_FragColor = vec4(color, softAlpha * (1.0 - d * 0.3));
         fragmentShader,
         vertexColors: true,
         transparent: true,
-        blending: THREE.CustomBlending,
-        blendEquation: THREE.AddEquation,
-        blendSrc: THREE.SrcAlphaFactor,
-        blendDst: THREE.OneFactor,
+        blending: THREE.AdditiveBlending,
         depthTest: true,
         depthWrite: false,
         uniforms: { uTime: { value: 0 } },
@@ -158,13 +129,12 @@ gl_FragColor = vec4(color, softAlpha * (1.0 - d * 0.3));
     }
 
     if (selectedGroupRef.current) {
-      const ring = selectedGroupRef.current.children[3];
       const shimmer = selectedGroupRef.current.getObjectByName("shimmer");
-      if (ring) ring.rotation.z = t * 0.3;
       if (shimmer) shimmer.rotation.y = t * 0.2;
     }
   });
 
+  // 🔍 Click to select
   useEffect(() => {
     if (!pointsRef.current) return;
     pointsRef.current.raycast = THREE.Points.prototype.raycast;
@@ -188,6 +158,7 @@ gl_FragColor = vec4(color, softAlpha * (1.0 - d * 0.3));
     return () => gl.domElement.removeEventListener("click", handleClick);
   }, [stars, camera, gl, pointsRef, onStarClick]);
 
+  // ✨ Update selection visuals
   useEffect(() => {
     const g = selectedGroupRef.current;
     if (!g) return;
@@ -199,15 +170,9 @@ gl_FragColor = vec4(color, softAlpha * (1.0 - d * 0.3));
     const color = spectralToColor(selectedStar.spect);
     g.position.set(selectedStar.x, selectedStar.y, selectedStar.z);
     g.visible = true;
-
-    const coreMat = g.children[0].material;
-    coreMat.color = color.clone().multiplyScalar(1.5);
-    coreMat.emissive = color;
-    coreMat.emissiveIntensity = 1.2;
-
-    g.children[1].material.color = color.clone().multiplyScalar(1.05);
-    g.children[2].material.color = color.clone().multiplyScalar(0.8);
-    g.children[3].material.color = color.clone().multiplyScalar(1.3);
+    g.children.forEach((child) => {
+      if (child.material) child.material.color = color.clone();
+    });
   }, [selectedStar]);
 
   return (
@@ -216,56 +181,40 @@ gl_FragColor = vec4(color, softAlpha * (1.0 - d * 0.3));
       <ambientLight intensity={0.4} color="#b2d8ff" />
       <pointLight position={[0, 0, 0]} intensity={1} color="#ffffff" />
 
-      {/* 🌟 Refined Highlight — Cinematic Pop */}
+      {/* ✴️ Selection highlight */}
       <group ref={selectedGroupRef} visible={false}>
-        {/* Subtle core */}
         <mesh>
           <sphereGeometry args={[2.2, 64, 64]} />
-          <meshStandardMaterial
-            emissiveIntensity={1.2}
-            metalness={0.3}
-            roughness={0.25}
-            toneMapped={false}
-          />
+          <meshStandardMaterial emissiveIntensity={1.2} metalness={0.3} roughness={0.25} />
         </mesh>
 
-        {/* Soft inner glow */}
+        {/* Pulsing glow */}
         <mesh ref={pulseRef}>
           <sphereGeometry args={[3.5, 64, 64]} />
           <meshBasicMaterial
             transparent
             opacity={0.5}
             blending={THREE.AdditiveBlending}
-            depthWrite={false}
-            side={THREE.DoubleSide}
+            depthWrite={true}
+            depthTest={true}
+            side={THREE.FrontSide}
           />
         </mesh>
 
-        {/* Gradient halo */}
+        {/* Ripple sphere */}
         <mesh ref={rippleRef}>
           <sphereGeometry args={[5.5, 64, 64]} />
           <meshBasicMaterial
             transparent
             opacity={0.2}
             blending={THREE.AdditiveBlending}
-            depthWrite={false}
-            side={THREE.DoubleSide}
+            depthWrite={true}
+            depthTest={true}
+            side={THREE.FrontSide}
           />
         </mesh>
 
-        {/* Orbiting lines */}
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[6, 7, 120]} />
-          <meshBasicMaterial
-            transparent
-            opacity={0.5}
-            blending={THREE.AdditiveBlending}
-            depthWrite={false}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-
-        {/* Parallax shimmer */}
+        {/* Shimmer particles */}
         <group name="shimmer">
           {Array.from({ length: 16 }).map((_, i) => (
             <mesh
@@ -281,7 +230,8 @@ gl_FragColor = vec4(color, softAlpha * (1.0 - d * 0.3));
                 transparent
                 opacity={0.8}
                 blending={THREE.AdditiveBlending}
-                depthWrite={false}
+                depthWrite={true}
+                depthTest={true}
               />
             </mesh>
           ))}

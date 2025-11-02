@@ -89,7 +89,7 @@ export default function CinematicIntro({ onFinish }) {
             animate={{ opacity: 1 }}
             transition={{ delay: 1.4, duration: 1.2 }}
           >
-            Version 1.4.0
+            Version 1.5.3
           </motion.p>
 
           {/* 🖱 Skip Hint */}
